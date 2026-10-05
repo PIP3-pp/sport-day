@@ -7,10 +7,12 @@ export function DateSelector({
   dates,
   selected,
   today,
+  hrefFor,
 }: {
   dates: string[];
   selected: string;
   today: string;
+  hrefFor: (date: string) => string;
 }) {
   return (
     <nav aria-label="เลือกวันแข่งขัน">
@@ -21,7 +23,7 @@ export function DateSelector({
           return (
             <li key={date}>
               <Link
-                href={`/schedule?date=${date}`}
+                href={hrefFor(date)}
                 aria-current={isSelected ? "date" : undefined}
                 className={cn(
                   "flex w-16 flex-col items-center rounded-lg border bg-card py-2.5 transition-colors hover:border-foreground",
