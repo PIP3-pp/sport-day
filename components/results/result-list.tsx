@@ -1,3 +1,4 @@
+import { RevealItem } from "@/components/shared/motion";
 import { MatchCard } from "@/components/shared/match-card";
 import type { MatchView } from "@/lib/queries/matches";
 import { formatDisplayDate } from "@/lib/date";
@@ -17,8 +18,10 @@ export function ResultList({ matches }: { matches: MatchView[] }) {
             <time dateTime={date}>{formatDisplayDate(date)}</time>
           </h2>
           <div className="space-y-3">
-            {items.map((match) => (
-              <MatchCard key={match.id} match={match} />
+            {items.map((match, i) => (
+              <RevealItem key={match.id} index={i}>
+                <MatchCard match={match} />
+              </RevealItem>
             ))}
           </div>
         </section>

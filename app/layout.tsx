@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Thai } from "next/font/google";
+import { MotionProvider } from "@/components/shared/motion";
 import { Toaster } from "@/components/ui/sonner";
 import { getSiteConfigSafe } from "@/lib/queries/config";
 import "./globals.css";
@@ -39,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="th" className={`${inter.variable} ${notoThai.variable}`}>
       <body className="min-h-dvh">
-        {children}
+        <MotionProvider>{children}</MotionProvider>
         <Toaster position="top-center" />
       </body>
     </html>

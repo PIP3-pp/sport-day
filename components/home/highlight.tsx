@@ -12,15 +12,15 @@ export function HighlightCard({
   match: MatchView | null;
 }) {
   return (
-    <article className="overflow-hidden rounded-lg border bg-card sm:grid sm:grid-cols-5">
+    <article className="group overflow-hidden rounded-lg border bg-card transition-shadow duration-300 hover:shadow-md sm:grid sm:grid-cols-5">
       {highlight.imageUrl && (
-        <div className="relative aspect-video sm:col-span-2 sm:aspect-auto">
+        <div className="relative aspect-video overflow-hidden sm:col-span-2 sm:aspect-auto">
           <Image
             src={highlight.imageUrl}
             alt=""
             fill
             sizes="(min-width: 640px) 40vw, 100vw"
-            className="object-cover"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
       )}

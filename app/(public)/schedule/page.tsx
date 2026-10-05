@@ -2,6 +2,7 @@ import { CalendarDays } from "lucide-react";
 import type { Metadata } from "next";
 import { DateSelector } from "@/components/schedule/date-selector";
 import { EmptyState } from "@/components/shared/empty-state";
+import { RevealItem } from "@/components/shared/motion";
 import { MatchCard } from "@/components/shared/match-card";
 import { PageHeader } from "@/components/shared/section-heading";
 import { SportFilter } from "@/components/shared/sport-filter";
@@ -74,8 +75,10 @@ export default async function SchedulePage({
           </div>
           {matches.length > 0 ? (
             <div className="space-y-3">
-              {matches.map((match) => (
-                <MatchCard key={match.id} match={match} />
+              {matches.map((match, i) => (
+                <RevealItem key={match.id} index={i}>
+                  <MatchCard match={match} />
+                </RevealItem>
               ))}
             </div>
           ) : (

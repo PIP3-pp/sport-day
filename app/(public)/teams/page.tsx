@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/section-heading";
+import { CountUp, RevealItem } from "@/components/shared/motion";
 import { TeamLogo } from "@/components/shared/team-badge";
 import { getStandings } from "@/lib/queries/standings";
 
@@ -16,11 +17,12 @@ export default async function TeamsPage() {
       <PageHeader eyebrow="Teams" title="ทีมสี" description="คะแนนรวมและข้อมูลของแต่ละสี" />
       <div className="container-page py-8">
         <ul className="grid gap-4 sm:grid-cols-2">
-          {standings.map((team) => (
+          {standings.map((team, index) => (
             <li key={team.id}>
+              <RevealItem index={index} className="h-full">
               <Link
                 href={`/teams/${team.slug}`}
-                className="group flex h-full flex-col overflow-hidden rounded-lg border bg-card transition-colors hover:border-foreground"
+                className="group flex h-full flex-col overflow-hidden rounded-lg border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground hover:shadow-md"
               >
                 <span aria-hidden className="h-1.5" style={{ backgroundColor: team.color }} />
                 <span className="flex flex-1 items-center gap-4 p-5">
@@ -37,15 +39,16 @@ export default async function TeamsPage() {
                     )}
                   </span>
                   <span className="text-right">
-                    <span className="block text-3xl font-black tabular-nums">{team.total}</span>
+                    <CountUp value={team.total} className="block text-3xl font-black tabular-nums" />
                     <span className="eyebrow">PTS</span>
                   </span>
                   <ArrowRight
                     aria-hidden
-                    className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                    className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1"
                   />
                 </span>
               </Link>
+              </RevealItem>
             </li>
           ))}
         </ul>

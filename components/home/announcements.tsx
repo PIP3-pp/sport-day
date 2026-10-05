@@ -8,7 +8,7 @@ export function AnnouncementList({ announcements }: { announcements: Announcemen
       {announcements.map((item) => (
         <li key={item.id}>
           <details className="group">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 sm:px-5 [&::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 transition-colors hover:bg-muted/50 sm:px-5 [&::-webkit-details-marker]:hidden">
               <span className="min-w-0">
                 <span className="block font-semibold">{item.title}</span>
                 <time

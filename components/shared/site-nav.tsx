@@ -2,6 +2,7 @@
 
 import { CalendarDays, Home, Images, Trophy, Users } from "lucide-react";
 import Link from "next/link";
+import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -31,11 +32,18 @@ export function DesktopNav() {
               href={href}
               aria-current={isActive(href) ? "page" : undefined}
               className={cn(
-                "rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
-                isActive(href) && "bg-muted text-foreground",
+                "relative block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+                isActive(href) && "text-foreground",
               )}
             >
-              {label}
+              {isActive(href) && (
+                <motion.span
+                  layoutId="desktop-nav-pill"
+                  className="absolute inset-0 rounded-md bg-muted"
+                  transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                />
+              )}
+              <span className="relative">{label}</span>
             </Link>
           </li>
         ))}
@@ -59,11 +67,25 @@ export function MobileNav() {
               href={href}
               aria-current={isActive(href) ? "page" : undefined}
               className={cn(
-                "flex h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground",
+                "relative flex h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors active:scale-95",
                 isActive(href) && "text-foreground",
               )}
             >
-              <Icon aria-hidden className="size-5" strokeWidth={isActive(href) ? 2.5 : 2} />
+              {isActive(href) && (
+                <motion.span
+                  layoutId="mobile-nav-indicator"
+                  className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-foreground"
+                  transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                />
+              )}
+              <Icon
+                aria-hidden
+                className={cn(
+                  "size-5 transition-transform duration-200",
+                  isActive(href) && "-translate-y-0.5 scale-110",
+                )}
+                strokeWidth={isActive(href) ? 2.5 : 2}
+              />
               {label}
             </Link>
           </li>

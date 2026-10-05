@@ -1,4 +1,5 @@
 import type { MatchView } from "@/lib/queries/matches";
+import { CountUp } from "@/components/shared/motion";
 import { formatDisplayDate } from "@/lib/date";
 
 export function TodayOverview({ date, matches }: { date: string; matches: MatchView[] }) {
@@ -25,7 +26,9 @@ export function TodayOverview({ date, matches }: { date: string; matches: MatchV
         {stats.map((stat) => (
           <div key={stat.label} className="flex flex-col-reverse">
             <dt className="text-xs text-muted-foreground">{stat.label}</dt>
-            <dd className="text-2xl font-black tabular-nums">{stat.value}</dd>
+            <dd className="text-2xl font-black tabular-nums">
+              <CountUp value={stat.value} />
+            </dd>
           </div>
         ))}
       </dl>

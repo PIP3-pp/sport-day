@@ -34,7 +34,7 @@ export function SportFilter({
                 href={hrefFor(filter.id)}
                 aria-current={active ? "true" : undefined}
                 className={cn(
-                  "inline-flex h-9 items-center rounded-full border bg-card px-4 text-sm font-medium whitespace-nowrap transition-colors hover:border-foreground",
+                  "inline-flex h-9 items-center rounded-full border bg-card px-4 text-sm font-medium whitespace-nowrap transition-all duration-200 hover:border-foreground active:scale-95",
                   active && "border-foreground bg-foreground text-background",
                 )}
               >

@@ -18,10 +18,10 @@ export function GalleryLink({ url }: { url: string | null }) {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex h-11 shrink-0 items-center gap-2 rounded-md bg-foreground px-5 text-sm font-semibold text-background transition-colors hover:bg-foreground/85"
+        className="group inline-flex h-11 shrink-0 items-center gap-2 rounded-md bg-foreground px-5 text-sm font-semibold text-background transition-all hover:bg-foreground/85 active:scale-95"
       >
         เปิด Google Drive
-        <ArrowUpRight aria-hidden className="size-4" />
+        <ArrowUpRight aria-hidden className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         <span className="sr-only">(เปิดในแท็บใหม่)</span>
       </a>
     </div>

@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -40,12 +41,19 @@ export function AdminNav() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex h-10 items-center gap-2.5 rounded-md px-3 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                  active && "bg-foreground text-background hover:bg-foreground hover:text-background",
+                  "relative flex h-10 items-center gap-2.5 rounded-md px-3 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                  active && "text-background hover:bg-transparent hover:text-background",
                 )}
               >
-                <Icon aria-hidden className="size-4" />
-                {label}
+                {active && (
+                  <motion.span
+                    layoutId="admin-nav-pill"
+                    className="absolute inset-0 rounded-md bg-foreground"
+                    transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                  />
+                )}
+                <Icon aria-hidden className="relative size-4" />
+                <span className="relative">{label}</span>
               </Link>
             </li>
           );

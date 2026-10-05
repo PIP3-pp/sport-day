@@ -121,7 +121,7 @@ export function MatchTeams({
 /** One row of a schedule or result list. */
 export function MatchCard({ match }: { match: MatchView }) {
   return (
-    <article className="grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-[4.5rem_1fr] sm:gap-5">
+    <article className="grid gap-3 rounded-lg border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-md sm:grid-cols-[4.5rem_1fr] sm:gap-5">
       <div className="flex items-center justify-between sm:block">
         <p className="text-lg font-bold tabular-nums sm:text-xl">
           <time>{formatTime(match.startTime)}</time>

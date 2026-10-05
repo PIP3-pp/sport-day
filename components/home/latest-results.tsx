@@ -52,7 +52,7 @@ export function LatestResults({ matches }: { matches: MatchView[] }) {
             initial={{ opacity: 0, x: direction * offset }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -direction * offset }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="flex min-h-52 flex-col justify-between gap-6 p-5 sm:p-7"
           >
             <div className="flex items-start justify-between gap-3">

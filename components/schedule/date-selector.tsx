@@ -26,7 +26,7 @@ export function DateSelector({
                 href={hrefFor(date)}
                 aria-current={isSelected ? "date" : undefined}
                 className={cn(
-                  "flex w-16 flex-col items-center rounded-lg border bg-card py-2.5 transition-colors hover:border-foreground",
+                  "flex w-16 flex-col items-center rounded-lg border bg-card py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground active:scale-95",
                   isSelected && "border-foreground bg-foreground text-background",
                 )}
               >

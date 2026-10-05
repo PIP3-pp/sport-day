@@ -6,6 +6,7 @@ import { HighlightCard } from "@/components/home/highlight";
 import { LatestResults } from "@/components/home/latest-results";
 import { Standings } from "@/components/home/standings";
 import { TodayOverview } from "@/components/home/today-overview";
+import { Reveal, RevealItem } from "@/components/shared/motion";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MatchCard } from "@/components/shared/match-card";
 import { SectionHeading } from "@/components/shared/section-heading";
@@ -37,11 +38,12 @@ export default async function HomePage() {
       <Hero config={config} teams={[...standings].sort((a, b) => a.id - b.id)} />
 
       <div className="container-page space-y-12 py-8 sm:space-y-16 sm:py-12">
-        <div className="space-y-4">
+        <Reveal className="space-y-4">
           <Standings standings={standings} />
           <TodayOverview date={today} matches={todayMatches} />
-        </div>
+        </Reveal>
 
+        <Reveal>
         <section>
           <SectionHeading title="ผลการแข่งขันล่าสุด" eyebrow="Latest Results" href="/results" />
           {latestResults.length > 0 ? (
@@ -50,20 +52,26 @@ export default async function HomePage() {
             <EmptyState icon={Trophy} message="ยังไม่มีผลการแข่งขัน" />
           )}
         </section>
+        </Reveal>
 
+        <Reveal>
         <section>
           <SectionHeading title="การแข่งขันวันนี้" eyebrow="Today's Schedule" href="/schedule" />
           {todayMatches.length > 0 ? (
             <div className="space-y-3">
-              {todayMatches.map((match) => (
-                <MatchCard key={match.id} match={match} />
+              {todayMatches.map((match, i) => (
+                <RevealItem key={match.id} index={i}>
+                  <MatchCard match={match} />
+                </RevealItem>
               ))}
             </div>
           ) : (
             <EmptyState icon={CalendarDays} message="ยังไม่มีการแข่งขันในวันนี้" />
           )}
         </section>
+        </Reveal>
 
+        <Reveal>
         <section aria-label="Highlight of the Day">
           {highlight ? (
             <HighlightCard highlight={highlight} match={highlightMatch} />
@@ -71,7 +79,9 @@ export default async function HomePage() {
             <EmptyState icon={Star} message="ยังไม่มี Highlight ประจำวันนี้" />
           )}
         </section>
+        </Reveal>
 
+        <Reveal>
         <section>
           <SectionHeading title="ข่าวสาร" eyebrow="Announcements" />
           {announcements.length > 0 ? (
@@ -80,10 +90,13 @@ export default async function HomePage() {
             <EmptyState icon={Megaphone} message="ยังไม่มีประกาศ" />
           )}
         </section>
+        </Reveal>
 
+        <Reveal>
         <section aria-label="Gallery">
           <GalleryLink url={config.galleryDriveUrl} />
         </section>
+        </Reveal>
       </div>
     </>
   );
