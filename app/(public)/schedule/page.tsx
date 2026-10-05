@@ -61,15 +61,17 @@ export default async function SchedulePage({
             hrefFor={(date) => href(date, sportId)}
           />
         )}
-        <SportFilter
-          sports={sports}
-          selectedId={sportId}
-          hrefFor={(id) => href(selected, id)}
-        />
         <section>
-          <h2 className="mb-4 text-xl font-bold tracking-tight">
+          <h2 className="mb-4 text-2xl font-bold tracking-tight sm:text-3xl">
             <time dateTime={selected}>{formatDisplayDate(selected)}</time>
           </h2>
+          <div className="mb-4">
+            <SportFilter
+              sports={sports}
+              selectedId={sportId}
+              hrefFor={(id) => href(selected, id)}
+            />
+          </div>
           {matches.length > 0 ? (
             <div className="space-y-3">
               {matches.map((match) => (
