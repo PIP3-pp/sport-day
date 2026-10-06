@@ -7,10 +7,11 @@ import type { ActionState } from "@/lib/action-state";
 import { TAGS } from "@/lib/queries/cache";
 import { teamSchema } from "@/lib/validations";
 import {
+  adminActor,
+  audit,
   failure,
   invalid,
   invalidate,
-  isAdmin,
   UNAUTHORIZED,
   uploadImage,
 } from "./helpers";
@@ -20,7 +21,8 @@ export async function updateTeam(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await isAdmin())) return UNAUTHORIZED;
+  const actor = await adminActor();
+  if (!actor) return UNAUTHORIZED;
   const parsed = teamSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return invalid(parsed.error);
   const { id, name, slogan, description } = parsed.data;
@@ -42,6 +44,7 @@ export async function updateTeam(
   } catch (error) {
     return failure(error);
   }
+  await audit(actor, "team.update", name);
   invalidate(TAGS.teams);
   return { ok: true, message: "บันทึกข้อมูลทีมแล้ว" };
 }

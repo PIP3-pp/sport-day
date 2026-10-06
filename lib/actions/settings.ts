@@ -6,10 +6,11 @@ import type { ActionState } from "@/lib/action-state";
 import { TAGS } from "@/lib/queries/cache";
 import { settingsSchema } from "@/lib/validations";
 import {
+  adminActor,
+  audit,
   failure,
   invalid,
   invalidate,
-  isAdmin,
   UNAUTHORIZED,
   uploadImage,
 } from "./helpers";
@@ -18,10 +19,11 @@ export async function saveSettings(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await isAdmin())) return UNAUTHORIZED;
+  const actor = await adminActor();
+  if (!actor) return UNAUTHORIZED;
   const parsed = settingsSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return invalid(parsed.error);
-  const { eventName, eventYear, slogan, galleryDriveUrl } = parsed.data;
+  const { eventName, eventYear, slogan, galleryDriveUrl, rankPoints } = parsed.data;
 
   const upload = await uploadImage(formData.get("schoolLogo"), "site");
   if (!upload.ok) return { ok: false, fieldErrors: { schoolLogo: [upload.message] } };
@@ -31,6 +33,7 @@ export async function saveSettings(
     eventYear,
     slogan: slogan ?? "",
     galleryDriveUrl: galleryDriveUrl ?? null,
+    rankPoints: rankPoints?.replace(/\s+/g, "") ?? null,
     ...(upload.url ? { schoolLogoUrl: upload.url } : {}),
     ...(formData.get("removeSchoolLogo") === "on" && !upload.url
       ? { schoolLogoUrl: null }
@@ -45,6 +48,7 @@ export async function saveSettings(
   } catch (error) {
     return failure(error);
   }
+  await audit(actor, "settings.update", `${eventName} ${eventYear}`);
   invalidate(TAGS.config);
   return { ok: true, message: "บันทึกการตั้งค่าแล้ว" };
 }

@@ -90,7 +90,6 @@ async function main() {
         matchId: match.id,
         teamId: team(l.slug),
         points: l.points,
-        reason: match.round,
       })),
     );
   };

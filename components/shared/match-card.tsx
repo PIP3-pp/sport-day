@@ -121,10 +121,17 @@ export function MatchTeams({
 /** One row of a schedule or result list. */
 export function MatchCard({ match }: { match: MatchView }) {
   return (
-    <article className="grid gap-3 rounded-lg border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-md sm:grid-cols-[4.5rem_1fr] sm:gap-5">
+    <article
+      className={cn(
+        "grid gap-3 rounded-lg border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-md sm:grid-cols-[4.5rem_1fr] sm:gap-5",
+        match.status === "in_progress" && "border-red-500/60 ring-1 ring-red-500/30",
+      )}
+    >
       <div className="flex items-center justify-between sm:block">
         <p className="text-lg font-bold tabular-nums sm:text-xl">
-          <time>{formatTime(match.startTime)}</time>
+          <time dateTime={`${match.date}T${formatTime(match.startTime)}`}>
+            {formatTime(match.startTime)}
+          </time>
         </p>
         <StatusBadge status={match.status} className="sm:hidden" />
       </div>

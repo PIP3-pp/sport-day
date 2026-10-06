@@ -6,13 +6,14 @@ import { sports } from "@/db/schema";
 import type { ActionState } from "@/lib/action-state";
 import { TAGS } from "@/lib/queries/cache";
 import { idSchema, sportSchema } from "@/lib/validations";
-import { failure, invalid, invalidate, isAdmin, UNAUTHORIZED } from "./helpers";
+import { adminActor, audit, failure, invalid, invalidate, UNAUTHORIZED } from "./helpers";
 
 export async function saveSport(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await isAdmin())) return UNAUTHORIZED;
+  const actor = await adminActor();
+  if (!actor) return UNAUTHORIZED;
   const parsed = sportSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return invalid(parsed.error);
   const { id, name, icon, isActive } = parsed.data;
@@ -24,6 +25,7 @@ export async function saveSport(
   } catch (error) {
     return failure(error);
   }
+  await audit(actor, id ? "sport.update" : "sport.create", name);
   invalidate(TAGS.sports);
   return { ok: true, message: "บันทึกกีฬาแล้ว" };
 }
@@ -32,7 +34,8 @@ export async function deleteSport(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await isAdmin())) return UNAUTHORIZED;
+  const actor = await adminActor();
+  if (!actor) return UNAUTHORIZED;
   const parsed = idSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return invalid(parsed.error);
 
@@ -43,6 +46,7 @@ export async function deleteSport(
       foreignKey: "ลบไม่ได้ เพราะมีการแข่งขันที่ใช้กีฬานี้อยู่ ให้ปิดการใช้งานแทน",
     });
   }
+  await audit(actor, "sport.delete", `#${parsed.data.id}`);
   invalidate(TAGS.sports);
   return { ok: true, message: "ลบกีฬาแล้ว" };
 }

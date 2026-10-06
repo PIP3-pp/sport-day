@@ -6,13 +6,14 @@ import { announcements } from "@/db/schema";
 import type { ActionState } from "@/lib/action-state";
 import { TAGS } from "@/lib/queries/cache";
 import { announcementSchema, idSchema } from "@/lib/validations";
-import { failure, invalid, invalidate, isAdmin, UNAUTHORIZED } from "./helpers";
+import { adminActor, audit, failure, invalid, invalidate, UNAUTHORIZED } from "./helpers";
 
 export async function saveAnnouncement(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await isAdmin())) return UNAUTHORIZED;
+  const actor = await adminActor();
+  if (!actor) return UNAUTHORIZED;
   const parsed = announcementSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return invalid(parsed.error);
   const { id, ...values } = parsed.data;
@@ -23,6 +24,7 @@ export async function saveAnnouncement(
   } catch (error) {
     return failure(error);
   }
+  await audit(actor, id ? "announcement.update" : "announcement.create", values.title);
   invalidate(TAGS.announcements);
   return { ok: true, message: "บันทึกประกาศแล้ว" };
 }
@@ -31,7 +33,8 @@ export async function deleteAnnouncement(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await isAdmin())) return UNAUTHORIZED;
+  const actor = await adminActor();
+  if (!actor) return UNAUTHORIZED;
   const parsed = idSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return invalid(parsed.error);
 
@@ -40,6 +43,7 @@ export async function deleteAnnouncement(
   } catch (error) {
     return failure(error);
   }
+  await audit(actor, "announcement.delete", `#${parsed.data.id}`);
   invalidate(TAGS.announcements);
   return { ok: true, message: "ลบประกาศแล้ว" };
 }

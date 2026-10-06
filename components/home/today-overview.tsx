@@ -4,9 +4,11 @@ import { formatDisplayDate } from "@/lib/date";
 
 export function TodayOverview({ date, matches }: { date: string; matches: MatchView[] }) {
   const completed = matches.filter((m) => m.status === "completed").length;
+  const live = matches.filter((m) => m.status === "in_progress").length;
   const upcoming = matches.filter((m) => m.status === "scheduled").length;
   const stats = [
     { label: "การแข่งขัน", value: matches.length },
+    ...(live > 0 ? [{ label: "กำลังแข่ง", value: live }] : []),
     { label: "เสร็จสิ้น", value: completed },
     { label: "ยังไม่เริ่ม", value: upcoming },
   ];

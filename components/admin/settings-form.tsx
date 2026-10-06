@@ -27,6 +27,13 @@ export function SettingsForm({
       </div>
       <TextField name="slogan" label="สโลแกน" defaultValue={config.slogan} />
       <TextField
+        name="rankPoints"
+        label="คะแนนสะสมตามอันดับ (ไม่บังคับ)"
+        defaultValue={config.rankPoints.join(",")}
+        placeholder="30,20,10,5"
+        hint="อันดับ 1,2,3,... คั่นด้วยจุลภาค ใช้เติมช่องคะแนนในหน้าบันทึกผลการแข่งขันแบบจัดอันดับ แก้ไขได้ทุกครั้ง"
+      />
+      <TextField
         name="galleryDriveUrl"
         label="ลิงก์ Google Drive (Gallery)"
         type="url"

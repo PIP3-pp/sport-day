@@ -40,6 +40,7 @@ async function fetchMatches(
   where: SQL | undefined,
   order: Order,
   limit?: number,
+  offset?: number,
 ): Promise<MatchView[]> {
   const rows = await db.query.matches.findMany({
     where,
@@ -48,6 +49,7 @@ async function fetchMatches(
         ? [asc(matches.date), asc(matches.startTime), asc(matches.id)]
         : [desc(matches.date), desc(matches.startTime), desc(matches.id)],
     limit,
+    offset,
     with: {
       sport: true,
       teamA: true,
@@ -85,6 +87,28 @@ export function fetchAllMatches() {
   return fetchMatches(undefined, "latest");
 }
 
+export type MatchPage = { matches: MatchView[]; hasMore: boolean };
+
+/** One page of matches, newest first. Fetches a row extra to know whether more follow. */
+export async function fetchMatchPage(
+  where: SQL | undefined,
+  page: number,
+  pageSize: number,
+): Promise<MatchPage> {
+  const rows = await fetchMatches(where, "latest", pageSize + 1, (page - 1) * pageSize);
+  return { matches: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
+}
+
+/** The result-entry queue: matches not yet finished, next to play first. */
+export const fetchPendingMatches = () =>
+  fetchMatches(inArray(matches.status, ["scheduled", "in_progress"]), "schedule");
+
+export const fetchMatchesOnDate = (date: string) =>
+  fetchMatches(eq(matches.date, date), "schedule");
+
+export const fetchRecentResults = (limit: number) =>
+  fetchMatches(eq(matches.status, "completed"), "latest", limit);
+
 export async function fetchMatch(id: number): Promise<MatchView | null> {
   const [match] = await fetchMatches(eq(matches.id, id), "schedule", 1);
   return match ?? null;
@@ -110,14 +134,16 @@ export const getMatchDates = cached(
   [TAGS.matches],
 );
 
+/** `limit` is a match count; one extra row is read so callers know whether more exist. */
 export const getCompletedMatches = cached(
-  (sportId?: number) =>
+  (sportId: number | undefined, limit: number) =>
     fetchMatches(
       and(
         eq(matches.status, "completed"),
         sportId ? eq(matches.sportId, sportId) : undefined,
       ),
       "latest",
+      limit + 1,
     ),
   "completed-matches",
   [TAGS.matches, TAGS.sports, TAGS.teams],
@@ -130,7 +156,7 @@ export const getLatestResults = cached(
 );
 
 export const getTeamResults = cached(
-  (teamId: number) =>
+  (teamId: number, limit: number) =>
     fetchMatches(
       and(
         eq(matches.status, "completed"),
@@ -143,6 +169,7 @@ export const getTeamResults = cached(
         ),
       ),
       "latest",
+      limit + 1,
     ),
   "team-results",
   [TAGS.matches, TAGS.sports, TAGS.teams],

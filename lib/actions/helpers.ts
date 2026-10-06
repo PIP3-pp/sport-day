@@ -2,6 +2,9 @@ import "server-only";
 import { put } from "@vercel/blob";
 import { updateTag } from "next/cache";
 import type { ZodError } from "zod";
+import { db } from "@/db";
+import { auditLog } from "@/db/schema";
+import { detectImageType } from "@/lib/image-type";
 import type { ActionState } from "@/lib/action-state";
 import type { CacheTag } from "@/lib/queries/cache";
 import { getAdminSession } from "@/lib/require-admin";
@@ -11,9 +14,18 @@ export const UNAUTHORIZED: ActionState = {
   message: "กรุณาเข้าสู่ระบบผู้ดูแลอีกครั้ง",
 };
 
-/** Every admin action calls this first; hiding UI is never the only check. */
-export async function isAdmin(): Promise<boolean> {
-  return (await getAdminSession()) !== null;
+/** Every admin action calls this first; hiding UI is never the only check. Returns the admin's email. */
+export async function adminActor(): Promise<string | null> {
+  return (await getAdminSession())?.user.email ?? null;
+}
+
+/** Records who did what. A failure to log is reported but never fails the action. */
+export async function audit(actor: string, action: string, summary: string) {
+  try {
+    await db.insert(auditLog).values({ actor, action, summary });
+  } catch (error) {
+    console.error("Failed to write audit log", error);
+  }
 }
 
 export function invalid(error: ZodError): ActionState {
@@ -68,11 +80,13 @@ export async function uploadImage(
   folder: string,
 ): Promise<UploadResult> {
   if (!(value instanceof File) || value.size === 0) return { ok: true, url: null };
-  const extension = IMAGE_TYPES[value.type];
-  if (!extension) return { ok: false, message: "รองรับเฉพาะไฟล์ PNG, JPG หรือ WebP" };
   if (value.size > MAX_IMAGE_BYTES) {
     return { ok: false, message: "ไฟล์รูปต้องมีขนาดไม่เกิน 2 MB" };
   }
+  // The browser-supplied MIME type is only a hint; trust the file's own signature.
+  const type = detectImageType(new Uint8Array(await value.slice(0, 12).arrayBuffer()));
+  const extension = type && IMAGE_TYPES[type];
+  if (!type || !extension) return { ok: false, message: "รองรับเฉพาะไฟล์ PNG, JPG หรือ WebP" };
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return {
       ok: false,
@@ -83,7 +97,7 @@ export async function uploadImage(
     const blob = await put(`${folder}/image.${extension}`, value, {
       access: "public",
       addRandomSuffix: true,
-      contentType: value.type,
+      contentType: type,
     });
     return { ok: true, url: blob.url };
   } catch (error) {

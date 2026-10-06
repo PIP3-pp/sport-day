@@ -3,6 +3,7 @@
 import {
   CalendarDays,
   Dumbbell,
+  History,
   LayoutDashboard,
   Megaphone,
   Settings,
@@ -23,6 +24,7 @@ const LINKS = [
   { href: "/admin/sports", label: "Sports", icon: Dumbbell },
   { href: "/admin/highlights", label: "Highlights", icon: Star },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
+  { href: "/admin/activity", label: "Activity", icon: History },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

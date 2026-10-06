@@ -4,19 +4,19 @@ import { MatchWhat, MatchWho } from "@/components/admin/match-summary";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { TeamBadge } from "@/components/shared/team-badge";
 import { formatDisplayDate, formatThaiDate, formatTime, todayInBangkok } from "@/lib/date";
-import { fetchAllMatches } from "@/lib/queries/matches";
+import { fetchMatchesOnDate, fetchRecentResults } from "@/lib/queries/matches";
 import { fetchStandings } from "@/lib/queries/standings";
 
 export default async function AdminDashboardPage() {
   const today = todayInBangkok();
-  const [matches, standings] = await Promise.all([fetchAllMatches(), fetchStandings()]);
-
-  const todayMatches = matches
-    .filter((m) => m.date === today)
-    .sort((a, b) => a.startTime.localeCompare(b.startTime));
-  const recentResults = matches.filter((m) => m.status === "completed").slice(0, 5);
+  const [todayMatches, recentResults, standings] = await Promise.all([
+    fetchMatchesOnDate(today),
+    fetchRecentResults(5),
+    fetchStandings(),
+  ]);
   const stats = [
     { label: "การแข่งขันวันนี้", value: todayMatches.length },
+    { label: "กำลังแข่ง", value: todayMatches.filter((m) => m.status === "in_progress").length },
     { label: "เสร็จสิ้น", value: todayMatches.filter((m) => m.status === "completed").length },
     { label: "ยังไม่เริ่ม", value: todayMatches.filter((m) => m.status === "scheduled").length },
   ];
@@ -25,7 +25,7 @@ export default async function AdminDashboardPage() {
     <>
       <AdminPageHeader title="Dashboard" description={formatDisplayDate(today)} />
       <div className="space-y-6">
-        <dl className="grid grid-cols-3 gap-3">
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {stats.map((stat) => (
             <div key={stat.label} className="flex flex-col-reverse rounded-lg border bg-card p-4">
               <dt className="text-xs text-muted-foreground sm:text-sm">{stat.label}</dt>

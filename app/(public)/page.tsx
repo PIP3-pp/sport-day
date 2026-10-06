@@ -31,6 +31,7 @@ export default async function HomePage() {
       getActiveHighlight(today),
       getPublishedAnnouncements(5),
     ]);
+  const liveMatches = todayMatches.filter((match) => match.status === "in_progress");
   const highlightMatch = highlight?.matchId ? await getMatch(highlight.matchId) : null;
 
   return (
@@ -38,6 +39,15 @@ export default async function HomePage() {
       <Hero config={config} teams={[...standings].sort((a, b) => a.id - b.id)} />
 
       <div className="container-page space-y-12 py-8 sm:space-y-16 sm:py-12">
+        {liveMatches.length > 0 && (
+          <section aria-label="กำลังแข่งขัน" className="space-y-3">
+            <SectionHeading title="กำลังแข่งขัน" eyebrow="Live Now" href="/schedule" />
+            {liveMatches.map((match) => (
+              <MatchCard key={match.id} match={match} />
+            ))}
+          </section>
+        )}
+
         <Reveal className="space-y-4">
           <Standings standings={standings} />
           <TodayOverview date={today} matches={todayMatches} />

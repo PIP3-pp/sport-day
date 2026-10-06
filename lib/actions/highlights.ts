@@ -7,10 +7,11 @@ import type { ActionState } from "@/lib/action-state";
 import { TAGS } from "@/lib/queries/cache";
 import { highlightSchema, idSchema } from "@/lib/validations";
 import {
+  adminActor,
+  audit,
   failure,
   invalid,
   invalidate,
-  isAdmin,
   UNAUTHORIZED,
   uploadImage,
 } from "./helpers";
@@ -19,7 +20,8 @@ export async function saveHighlight(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await isAdmin())) return UNAUTHORIZED;
+  const actor = await adminActor();
+  if (!actor) return UNAUTHORIZED;
   const parsed = highlightSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return invalid(parsed.error);
   const { id, date, title, description, matchId, isActive } = parsed.data;
@@ -61,6 +63,7 @@ export async function saveHighlight(
       foreignKey: "ไม่พบการแข่งขันที่เลือก",
     });
   }
+  await audit(actor, id ? "highlight.update" : "highlight.create", `${date} ${title}`);
   invalidate(TAGS.highlights);
   return { ok: true, message: "บันทึก Highlight แล้ว" };
 }
@@ -69,7 +72,8 @@ export async function deleteHighlight(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await isAdmin())) return UNAUTHORIZED;
+  const actor = await adminActor();
+  if (!actor) return UNAUTHORIZED;
   const parsed = idSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return invalid(parsed.error);
 
@@ -78,6 +82,7 @@ export async function deleteHighlight(
   } catch (error) {
     return failure(error);
   }
+  await audit(actor, "highlight.delete", `#${parsed.data.id}`);
   invalidate(TAGS.highlights);
   return { ok: true, message: "ลบ Highlight แล้ว" };
 }

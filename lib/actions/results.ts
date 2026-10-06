@@ -2,12 +2,12 @@
 
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { matches, results, scorePoints, sports, teams } from "@/db/schema";
+import { matches, results, scorePoints, teams } from "@/db/schema";
 import type { ActionState } from "@/lib/action-state";
 import { TAGS } from "@/lib/queries/cache";
 import { idSchema } from "@/lib/validations";
 import { parseResultLines } from "@/lib/validations/result";
-import { failure, invalid, invalidate, isAdmin, UNAUTHORIZED } from "./helpers";
+import { adminActor, audit, failure, invalid, invalidate, UNAUTHORIZED } from "./helpers";
 
 const DUPLICATE = "การแข่งขันนี้บันทึกผลไปแล้ว หากต้องการเปลี่ยนให้ใช้ “แก้ไขผล”";
 
@@ -20,7 +20,8 @@ export async function saveResult(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await isAdmin())) return UNAUTHORIZED;
+  const actor = await adminActor();
+  if (!actor) return UNAUTHORIZED;
   const raw = Object.fromEntries(formData) as Record<string, string>;
   const parsedId = idSchema.safeParse({ id: raw.matchId });
   if (!parsedId.success) return { ok: false, message: "ไม่พบการแข่งขัน" };
@@ -32,13 +33,10 @@ export async function saveResult(
       .select({
         format: matches.format,
         status: matches.status,
-        round: matches.round,
         teamAId: matches.teamAId,
         teamBId: matches.teamBId,
-        sportName: sports.name,
       })
       .from(matches)
-      .innerJoin(sports, eq(sports.id, matches.sportId))
       .where(eq(matches.id, matchId));
     if (!match) return { ok: false, message: "ไม่พบการแข่งขัน" };
     if (match.status === "cancelled" || match.status === "postponed") {
@@ -86,7 +84,6 @@ export async function saveResult(
           matchId,
           teamId: line.teamId,
           points: line.points,
-          reason: `${match.sportName} — ${match.round}`,
         })),
       );
       await tx.update(matches).set({ status: "completed" }).where(eq(matches.id, matchId));
@@ -98,6 +95,7 @@ export async function saveResult(
     return failure(error, { unique: DUPLICATE });
   }
 
+  await audit(actor, isEdit ? "result.update" : "result.create", `match #${matchId}`);
   invalidate(TAGS.matches);
   return { ok: true, message: "บันทึกผลการแข่งขันแล้ว" };
 }
@@ -107,7 +105,8 @@ export async function deleteResult(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await isAdmin())) return UNAUTHORIZED;
+  const actor = await adminActor();
+  if (!actor) return UNAUTHORIZED;
   const parsed = idSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return invalid(parsed.error);
   const matchId = parsed.data.id;
@@ -121,6 +120,7 @@ export async function deleteResult(
   } catch (error) {
     return failure(error);
   }
+  await audit(actor, "result.delete", `match #${matchId}`);
   invalidate(TAGS.matches);
   return { ok: true, message: "ลบผลการแข่งขันแล้ว" };
 }

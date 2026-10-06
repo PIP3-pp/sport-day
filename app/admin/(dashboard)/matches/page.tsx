@@ -1,6 +1,6 @@
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { DeleteDialog, FormDialog } from "@/components/admin/action-form";
-import { AdminPageHeader, EmptyRow, Panel } from "@/components/admin/admin-page";
+import { AdminPageHeader, EmptyRow, Pager, Panel } from "@/components/admin/admin-page";
 import { MatchForm } from "@/components/admin/match-form";
 import { MatchWhat, MatchWhen, MatchWho } from "@/components/admin/match-summary";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -15,13 +15,21 @@ import {
 } from "@/components/ui/table";
 import { deleteMatch, saveMatch } from "@/lib/actions/matches";
 import { todayInBangkok } from "@/lib/date";
-import { fetchAllMatches } from "@/lib/queries/matches";
+import { parsePage } from "@/lib/pagination";
+import { fetchMatchPage } from "@/lib/queries/matches";
 import { fetchSports } from "@/lib/queries/sports";
 import { fetchTeams } from "@/lib/queries/teams";
 
-export default async function AdminMatchesPage() {
-  const [matches, sports, teams] = await Promise.all([
-    fetchAllMatches(),
+const PAGE_SIZE = 25;
+
+export default async function AdminMatchesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const page = parsePage((await searchParams).page);
+  const [{ matches, hasMore }, sports, teams] = await Promise.all([
+    fetchMatchPage(undefined, page, PAGE_SIZE),
     fetchSports(),
     fetchTeams(),
   ]);
@@ -55,7 +63,7 @@ export default async function AdminMatchesPage() {
         {!hasActiveSport ? (
           <EmptyRow message="ต้องเพิ่มกีฬาในเมนู Sports ก่อน จึงจะสร้างการแข่งขันได้" />
         ) : matches.length === 0 ? (
-          <EmptyRow message="ยังไม่มีการแข่งขัน" />
+          <EmptyRow message={page > 1 ? "ไม่มีรายการในหน้านี้" : "ยังไม่มีการแข่งขัน"} />
         ) : (
           <Table>
             <TableHeader>
@@ -121,6 +129,7 @@ export default async function AdminMatchesPage() {
             </TableBody>
           </Table>
         )}
+        <Pager page={page} hasMore={hasMore} hrefFor={(p) => `/admin/matches?page=${p}`} />
       </Panel>
     </>
   );

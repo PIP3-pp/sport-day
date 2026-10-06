@@ -3,6 +3,7 @@ import { Inter, Noto_Sans_Thai } from "next/font/google";
 import { MotionProvider } from "@/components/shared/motion";
 import { Toaster } from "@/components/ui/sonner";
 import { getSiteConfigSafe } from "@/lib/queries/config";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -18,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfigSafe();
   const title = `${config.eventName} ${config.eventYear}`;
   return {
+    metadataBase: new URL(siteUrl()),
     title: { default: title, template: `%s · ${title}` },
     description: DESCRIPTION,
     openGraph: {

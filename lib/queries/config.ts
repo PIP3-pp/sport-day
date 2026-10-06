@@ -2,6 +2,7 @@ import "server-only";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { siteConfig } from "@/db/schema";
+import { parseRankPoints } from "@/lib/rank-points";
 import { cached, TAGS } from "./cache";
 
 export type SiteConfig = {
@@ -10,6 +11,8 @@ export type SiteConfig = {
   slogan: string;
   schoolLogoUrl: string | null;
   galleryDriveUrl: string | null;
+  /** Default points by finishing position, used to pre-fill the result form. */
+  rankPoints: number[];
 };
 
 const FALLBACK: SiteConfig = {
@@ -18,6 +21,7 @@ const FALLBACK: SiteConfig = {
   slogan: "",
   schoolLogoUrl: null,
   galleryDriveUrl: null,
+  rankPoints: [],
 };
 
 export async function fetchSiteConfig(): Promise<SiteConfig> {
@@ -29,6 +33,7 @@ export async function fetchSiteConfig(): Promise<SiteConfig> {
     slogan: row.slogan,
     schoolLogoUrl: row.schoolLogoUrl,
     galleryDriveUrl: row.galleryDriveUrl,
+    rankPoints: parseRankPoints(row.rankPoints),
   };
 }
 

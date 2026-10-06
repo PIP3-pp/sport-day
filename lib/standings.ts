@@ -1,19 +1,20 @@
 export type RankedRow<T> = T & { rank: number };
 
 /**
- * Sorts by total (highest first) and assigns ranks. Teams with the same
- * total share a rank ("1, 2, 2, 4").
+ * Sorts by total (highest first), then by `golds` (first-place finishes) when
+ * present, and assigns ranks. Teams level on both share a rank ("1, 2, 2, 4").
  */
-export function rankByTotal<T extends { total: number }>(
+export function rankByTotal<T extends { total: number; golds?: number }>(
   rows: T[],
 ): RankedRow<T>[] {
-  const sorted = [...rows].sort((a, b) => b.total - a.total);
+  const golds = (row: T) => row.golds ?? 0;
+  const sorted = [...rows].sort((a, b) => b.total - a.total || golds(b) - golds(a));
   let rank = 0;
-  let previous: number | null = null;
+  let previous: T | null = null;
   return sorted.map((row, index) => {
-    if (row.total !== previous) {
+    if (!previous || row.total !== previous.total || golds(row) !== golds(previous)) {
       rank = index + 1;
-      previous = row.total;
+      previous = row;
     }
     return { ...row, rank };
   });

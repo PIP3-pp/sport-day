@@ -8,6 +8,9 @@ import * as schema from "@/db/schema";
 // `npm run admin:create`, so every authenticated user is an administrator.
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
+  // Counters live in the database: in-memory counters are per serverless
+  // instance, so they would not stop a brute-force across instances.
+  rateLimit: { storage: "database" },
   emailAndPassword: {
     enabled: true,
     disableSignUp: true,

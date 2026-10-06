@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { EDITABLE_MATCH_STATUSES, MATCH_FORMATS } from "@/lib/match-constants";
 import { isValidDateString } from "@/lib/date";
+import { RANK_POINTS_PATTERN } from "@/lib/rank-points";
 
 const emptyToUndefined = (value: unknown) =>
   value === "" || value === null ? undefined : value;
@@ -96,6 +97,14 @@ export const settingsSchema = z.object({
     .min(2000, "ปีไม่ถูกต้อง")
     .max(2600, "ปีไม่ถูกต้อง"),
   slogan: optionalText(120),
+  rankPoints: z.preprocess(
+    emptyToUndefined,
+    z
+      .string()
+      .trim()
+      .regex(RANK_POINTS_PATTERN, "กรอกคะแนนคั่นด้วยจุลภาค เช่น 30,20,10,5")
+      .optional(),
+  ),
   galleryDriveUrl: z.preprocess(
     emptyToUndefined,
     z

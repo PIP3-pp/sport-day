@@ -4,14 +4,19 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ResultList } from "@/components/results/result-list";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ShowMore } from "@/components/shared/show-more";
 import { TeamLogo } from "@/components/shared/team-badge";
+import { parseSteps, RESULTS_MAX_STEPS, RESULTS_PAGE_SIZE } from "@/lib/pagination";
 import { getTeamResults } from "@/lib/queries/matches";
 import { getStandings } from "@/lib/queries/standings";
 import { getTeamBySlug } from "@/lib/queries/teams";
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ show?: string }>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -19,12 +24,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return team ? { title: team.name, description: team.slogan ?? undefined } : {};
 }
 
-export default async function TeamPage({ params }: Props) {
+export default async function TeamPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const { show } = await searchParams;
   const team = await getTeamBySlug(slug);
   if (!team) notFound();
 
-  const [standings, matches] = await Promise.all([getStandings(), getTeamResults(team.id)]);
+  const steps = parseSteps(show);
+  const limit = steps * RESULTS_PAGE_SIZE;
+  const [standings, rows] = await Promise.all([
+    getStandings(),
+    getTeamResults(team.id, limit),
+  ]);
+  const matches = rows.slice(0, limit);
+  const hasMore = rows.length > limit && steps < RESULTS_MAX_STEPS;
   const standing = standings.find((row) => row.id === team.id);
 
   return (
@@ -74,7 +87,10 @@ export default async function TeamPage({ params }: Props) {
       <div className="container-page py-8">
         <p className="eyebrow mb-4">ผลการแข่งขันของ{team.name}</p>
         {matches.length > 0 ? (
-          <ResultList matches={matches} />
+          <>
+            <ResultList matches={matches} />
+            {hasMore && <ShowMore href={`/teams/${team.slug}?show=${steps + 1}`} />}
+          </>
         ) : (
           <EmptyState icon={Trophy} message="ยังไม่มีผลการแข่งขัน" />
         )}

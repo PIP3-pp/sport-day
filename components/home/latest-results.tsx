@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { MatchTeams, SportLabel } from "@/components/shared/match-card";
@@ -15,6 +15,8 @@ const AUTO_SLIDE_MS = 6000;
 export function LatestResults({ matches }: { matches: MatchView[] }) {
   const [[index, direction], setSlide] = useState<[number, number]>([0, 1]);
   const [paused, setPaused] = useState(false);
+  // Pause control for touch and keyboard users, who cannot hover (WCAG 2.2.2).
+  const [stopped, setStopped] = useState(false);
   const reduceMotion = useReducedMotion();
   const count = matches.length;
 
@@ -22,13 +24,13 @@ export function LatestResults({ matches }: { matches: MatchView[] }) {
     setSlide(([current]) => [(current + step + count) % count, step]);
 
   useEffect(() => {
-    if (paused || reduceMotion || count < 2) return;
+    if (paused || stopped || reduceMotion || count < 2) return;
     const timer = setInterval(
       () => setSlide(([current]) => [(current + 1) % count, 1]),
       AUTO_SLIDE_MS,
     );
     return () => clearInterval(timer);
-  }, [paused, reduceMotion, count]);
+  }, [paused, stopped, reduceMotion, count]);
 
   // A live refresh can shrink the list (e.g. a result is deleted).
   const current = Math.min(index, count - 1);
@@ -93,6 +95,17 @@ export function LatestResults({ matches }: { matches: MatchView[] }) {
             ))}
           </div>
           <div className="flex gap-2">
+            {!reduceMotion && (
+              <Button
+                variant="outline"
+                size="icon-lg"
+                aria-label={stopped ? "เล่นสไลด์อัตโนมัติ" : "หยุดสไลด์อัตโนมัติ"}
+                aria-pressed={stopped}
+                onClick={() => setStopped((value) => !value)}
+              >
+                {stopped ? <Play /> : <Pause />}
+              </Button>
+            )}
             <Button
               variant="outline"
               size="icon-lg"

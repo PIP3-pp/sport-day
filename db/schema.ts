@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   check,
   date,
@@ -79,7 +80,7 @@ export const matches = pgTable(
     index("matches_status_idx").on(t.status),
     check(
       "matches_status_check",
-      sql`${t.status} in ('scheduled', 'completed', 'postponed', 'cancelled')`,
+      sql`${t.status} in ('scheduled', 'in_progress', 'completed', 'postponed', 'cancelled')`,
     ),
     check(
       "matches_teams_check",
@@ -121,7 +122,6 @@ export const scorePoints = pgTable(
       .notNull()
       .references(() => teams.id, { onDelete: "restrict" }),
     points: integer("points").notNull(),
-    reason: text("reason"),
     createdAt: timestamps.createdAt,
   },
   (t) => [
@@ -175,9 +175,25 @@ export const siteConfig = pgTable(
     slogan: text("slogan").notNull().default(""),
     schoolLogoUrl: text("school_logo_url"),
     galleryDriveUrl: text("gallery_drive_url"),
+    // Comma-separated points by finishing position, e.g. "30,20,10,5". Pre-fills the result form.
+    rankPoints: text("rank_points"),
     ...timestamps,
   },
   (t) => [check("site_config_single_row", sql`${t.id} = 1`)],
+);
+
+// Who changed what in the admin. Append-only; no foreign keys so history
+// survives deleted rows.
+export const auditLog = pgTable(
+  "audit_log",
+  {
+    id: serial("id").primaryKey(),
+    at: timestamp("at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+    actor: text("actor").notNull(),
+    action: text("action").notNull(),
+    summary: text("summary").notNull(),
+  },
+  (t) => [index("audit_log_at_idx").on(t.at)],
 );
 
 // --- Better Auth tables (admin accounts and sessions only) ---
@@ -230,6 +246,15 @@ export const verification = pgTable("verification", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Login rate limiting (Better Auth `rateLimit.storage: "database"`), so the
+// counters are shared across serverless instances.
+export const rateLimit = pgTable("rate_limit", {
+  id: text("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  count: integer("count").notNull(),
+  lastRequest: bigint("last_request", { mode: "number" }).notNull(),
 });
 
 // --- Relations ---

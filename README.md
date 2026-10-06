@@ -4,7 +4,7 @@
 พร้อมหลังบ้านสำหรับผู้ดูแล
 
 - **เว็บสาธารณะ** — `/`, `/schedule`, `/results`, `/teams`, `/teams/[slug]`, `/gallery`
-- **ผู้ดูแล** — `/admin` (Dashboard, Matches, Results, Teams, Sports, Highlights, Announcements, Settings)
+- **ผู้ดูแล** — `/admin` (Dashboard, Matches, Results, Teams, Sports, Highlights, Announcements, Activity, Settings)
 
 ## Stack
 
@@ -44,10 +44,12 @@ npm run dev
 1. **Sports** — เพิ่มชนิดกีฬา
 2. **Teams** — แก้ชื่อ สโลแกน คำอธิบาย โลโก้ของ 4 สี
 3. **Matches** — สร้างการแข่งขัน เลือกรูปแบบ *แข่งเป็นคู่* หรือ *ทุกสีแข่งพร้อมกัน* (เช่น กรีฑา)
-4. **Results** — เมื่อแข่งจบ กรอกสกอร์/อันดับ และคะแนนสะสมที่แต่ละสีได้
-   ระบบจะตั้งสถานะเป็น "เสร็จสิ้น" และอัปเดตคะแนนรวมทันที
+4. **Results** — กด "เริ่มแข่ง" เมื่อเริ่มแข่ง (หน้าเว็บจะขึ้นสถานะ "กำลังแข่งขัน") แล้วเมื่อแข่งจบ
+   กรอกสกอร์/อันดับ และคะแนนสะสมที่แต่ละสีได้ ระบบจะตั้งสถานะเป็น "เสร็จสิ้น" และอัปเดตคะแนนรวมทันที
+   (ถ้าตั้ง "คะแนนสะสมตามอันดับ" ใน Settings ช่องคะแนนจะถูกเติมให้เมื่อเลือกอันดับ)
 5. **Highlights** — เลือก Highlight of the Day (วันละ 1 รายการ)
-6. **Announcements / Settings** — ข่าวสาร ชื่องาน ปี สโลแกน ลิงก์ Google Drive
+6. **Activity** — ดูว่าใครแก้ไขอะไรเมื่อไร (100 รายการล่าสุด)
+7. **Announcements / Settings** — ข่าวสาร ชื่องาน ปี สโลแกน ลิงก์ Google Drive
 
 ## หลักการสำคัญ
 
@@ -55,6 +57,9 @@ npm run dev
   ([lib/queries/standings.ts](lib/queries/standings.ts))
 - **บันทึกผลเป็น transaction เดียว** และกันการบันทึกซ้ำทั้งในโค้ดและด้วย unique index
   ([lib/actions/results.ts](lib/actions/results.ts))
+- **คะแนนเท่ากัน** — จัดอันดับด้วยคะแนนรวมก่อน ถ้าเท่ากันดูจำนวนครั้งที่ได้อันดับ 1
+  ถ้ายังเท่ากันจึงใช้อันดับร่วมกัน
+- **อัปเดตอัตโนมัติ** — หน้าเว็บสาธารณะรีเฟรชข้อมูลเองทุก 45 วินาทีขณะเปิดหน้าไว้
 - **ความปลอดภัย** — browser ไม่ต่อฐานข้อมูลโดยตรง ทุก server action ตรวจ session ผู้ดูแล
   และตรวจ input ด้วย Zod ฝั่ง server ปิดการสมัครสมาชิกสาธารณะ
 - **ประสิทธิภาพ** — query ฝั่งสาธารณะถูก cache แบบมี tag และถูกล้างเมื่อผู้ดูแลบันทึกข้อมูล
@@ -67,7 +72,7 @@ npm run dev
 | `npm run dev` / `build` / `start` | รันเว็บ |
 | `npm run lint` / `typecheck` / `test` | ตรวจโค้ดและรัน unit test |
 | `npm run db:generate` | สร้างไฟล์ migration หลังแก้ [db/schema.ts](db/schema.ts) |
-| `npm run db:migrate` | apply migration |
+| `npm run db:migrate` | apply migration (**รันก่อน deploy ทุกครั้งที่มีไฟล์ใหม่ใน `db/migrations`**) |
 
 ## Deploy (Vercel)
 
