@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AutoRefresh } from "@/components/shared/auto-refresh";
 import { DesktopNav, MobileNav } from "@/components/shared/site-nav";
 import { getSiteConfigSafe } from "@/lib/queries/config";
 
@@ -50,6 +51,7 @@ export default async function PublicLayout({
         </div>
       </footer>
       <MobileNav />
+      <AutoRefresh />
     </div>
   );
 }

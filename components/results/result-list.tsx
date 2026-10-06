@@ -1,4 +1,4 @@
-import { RevealItem } from "@/components/shared/motion";
+import { RevealItem } from "@/components/shared/reveal";
 import { MatchCard } from "@/components/shared/match-card";
 import type { MatchView } from "@/lib/queries/matches";
 import { formatDisplayDate } from "@/lib/date";

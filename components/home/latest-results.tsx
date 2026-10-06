@@ -30,7 +30,9 @@ export function LatestResults({ matches }: { matches: MatchView[] }) {
     return () => clearInterval(timer);
   }, [paused, reduceMotion, count]);
 
-  const match = matches[index];
+  // A live refresh can shrink the list (e.g. a result is deleted).
+  const current = Math.min(index, count - 1);
+  const match = matches[current];
   const offset = reduceMotion ? 0 : 32;
 
   return (
@@ -48,7 +50,7 @@ export function LatestResults({ matches }: { matches: MatchView[] }) {
           <motion.article
             key={match.id}
             aria-roledescription="slide"
-            aria-label={`${index + 1} จาก ${count}`}
+            aria-label={`${current + 1} จาก ${count}`}
             initial={{ opacity: 0, x: direction * offset }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -direction * offset }}
@@ -77,14 +79,14 @@ export function LatestResults({ matches }: { matches: MatchView[] }) {
                 key={item.id}
                 type="button"
                 aria-label={`ไปยังผลการแข่งขันที่ ${i + 1}`}
-                aria-current={i === index ? "true" : undefined}
+                aria-current={i === current ? "true" : undefined}
                 onClick={() => setSlide([i, i > index ? 1 : -1])}
                 className="grid size-6 place-items-center rounded-full"
               >
                 <span
                   className={cn(
                     "h-1.5 rounded-full transition-all",
-                    i === index ? "w-5 bg-foreground" : "w-1.5 bg-foreground/25",
+                    i === current ? "w-5 bg-foreground" : "w-1.5 bg-foreground/25",
                   )}
                 />
               </button>

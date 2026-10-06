@@ -2,7 +2,7 @@ import { CalendarDays } from "lucide-react";
 import type { Metadata } from "next";
 import { DateSelector } from "@/components/schedule/date-selector";
 import { EmptyState } from "@/components/shared/empty-state";
-import { RevealItem } from "@/components/shared/motion";
+import { RevealItem } from "@/components/shared/reveal";
 import { MatchCard } from "@/components/shared/match-card";
 import { PageHeader } from "@/components/shared/section-heading";
 import { SportFilter } from "@/components/shared/sport-filter";
@@ -27,8 +27,14 @@ export default async function SchedulePage({
   const { date: requested, sport } = await searchParams;
   const today = todayInBangkok();
   const [dates, sports] = await Promise.all([getMatchDates(), getActiveSports()]);
+  // Only match days (or today) are looked up, so arbitrary ?date= values can't
+  // create database queries and cache entries.
   const selected =
-    requested && isValidDateString(requested) ? requested : defaultDate(dates, today);
+    requested &&
+    isValidDateString(requested) &&
+    (requested === today || dates.includes(requested))
+      ? requested
+      : defaultDate(dates, today);
   const sportId = sports.find((s) => String(s.id) === sport)?.id;
 
   const dayMatches = await getMatchesByDate(selected);

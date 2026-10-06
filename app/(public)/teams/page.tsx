@@ -2,7 +2,8 @@ import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/section-heading";
-import { CountUp, RevealItem } from "@/components/shared/motion";
+import { CountUp } from "@/components/shared/motion";
+import { RevealItem } from "@/components/shared/reveal";
 import { TeamLogo } from "@/components/shared/team-badge";
 import { getStandings } from "@/lib/queries/standings";
 

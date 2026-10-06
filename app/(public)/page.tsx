@@ -6,7 +6,7 @@ import { HighlightCard } from "@/components/home/highlight";
 import { LatestResults } from "@/components/home/latest-results";
 import { Standings } from "@/components/home/standings";
 import { TodayOverview } from "@/components/home/today-overview";
-import { Reveal, RevealItem } from "@/components/shared/motion";
+import { Reveal, RevealItem } from "@/components/shared/reveal";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MatchCard } from "@/components/shared/match-card";
 import { SectionHeading } from "@/components/shared/section-heading";
