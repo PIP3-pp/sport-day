@@ -1,5 +1,6 @@
 import { CalendarDays, Megaphone, Star, Trophy } from "lucide-react";
 import { AnnouncementList } from "@/components/home/announcements";
+import { Banner } from "@/components/home/banner";
 import { GalleryLink } from "@/components/home/gallery-cta";
 import { Hero } from "@/components/home/hero";
 import { HighlightCard } from "@/components/home/highlight";
@@ -36,6 +37,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <Banner />
       <Hero config={config} teams={[...standings].sort((a, b) => a.id - b.id)} />
 
       <div className="container-page space-y-12 py-8 sm:space-y-16 sm:py-12">
