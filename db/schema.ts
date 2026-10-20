@@ -6,6 +6,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   pgTable,
   serial,
   text,
@@ -166,6 +167,31 @@ export const announcements = pgTable(
   (t) => [index("announcements_published_at_idx").on(t.publishedAt)],
 );
 
+// When and where each team practices a sport. A team may have several slots per sport.
+export const practiceSessions = pgTable(
+  "practice_sessions",
+  {
+    id: serial("id").primaryKey(),
+    sportId: integer("sport_id")
+      .notNull()
+      .references(() => sports.id, { onDelete: "restrict" }),
+    teamId: integer("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "restrict" }),
+    // Free text such as "จันทร์–ศุกร์" or "21–23 ต.ค.".
+    days: text("days").notNull(),
+    startTime: time("start_time").notNull(),
+    endTime: time("end_time").notNull(),
+    location: text("location").notNull(),
+    note: text("note"),
+    ...timestamps,
+  },
+  (t) => [
+    index("practice_sessions_sport_id_idx").on(t.sportId),
+    check("practice_sessions_time_check", sql`${t.endTime} > ${t.startTime}`),
+  ],
+);
+
 export const siteConfig = pgTable(
   "site_config",
   {
@@ -177,6 +203,10 @@ export const siteConfig = pgTable(
     galleryDriveUrl: text("gallery_drive_url"),
     // Comma-separated points by finishing position, e.g. "30,20,10,5". Pre-fills the result form.
     rankPoints: text("rank_points"),
+    // Uploaded cover image/video for the home page; null uses /banner.webp.
+    bannerUrl: text("banner_url"),
+    // Which public sections and pages are shown; see lib/visibility.ts.
+    visibility: jsonb("visibility"),
     ...timestamps,
   },
   (t) => [check("site_config_single_row", sql`${t.id} = 1`)],
@@ -286,6 +316,11 @@ export const scorePointsRelations = relations(scorePoints, ({ one }) => ({
     references: [matches.id],
   }),
   team: one(teams, { fields: [scorePoints.teamId], references: [teams.id] }),
+}));
+
+export const practiceSessionsRelations = relations(practiceSessions, ({ one }) => ({
+  sport: one(sports, { fields: [practiceSessions.sportId], references: [sports.id] }),
+  team: one(teams, { fields: [practiceSessions.teamId], references: [teams.id] }),
 }));
 
 export const highlightsRelations = relations(highlights, ({ one }) => ({

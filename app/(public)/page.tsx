@@ -23,41 +23,67 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const today = todayInBangkok();
-  const [config, standings, todayMatches, latestResults, highlight, announcements] =
-    await Promise.all([
-      getSiteConfig(),
-      getStandings(),
-      getMatchesByDate(today),
-      getLatestResults(8),
-      getActiveHighlight(today),
-      getPublishedAnnouncements(5),
-    ]);
+  const config = await getSiteConfig();
+  const show = config.visibility;
+  const needsTodayMatches = show.liveMatches || show.todayOverview || show.todayMatches;
+  // Sections that are switched off don't query the database at all.
+  const [standings, todayMatches, latestResults, highlight, announcements] = await Promise.all([
+    getStandings(),
+    needsTodayMatches ? getMatchesByDate(today) : [],
+    show.latestResults ? getLatestResults(8) : [],
+    show.highlight ? getActiveHighlight(today) : null,
+    show.announcements ? getPublishedAnnouncements(5) : [],
+  ]);
   const liveMatches = todayMatches.filter((match) => match.status === "in_progress");
   const highlightMatch = highlight?.matchId ? await getMatch(highlight.matchId) : null;
+  const scheduleHref = show.schedulePage ? "/schedule" : undefined;
+  const heroCta = show.practicePage
+    ? { href: "/practice", label: "ดูตารางซ้อม" }
+    : show.schedulePage
+      ? { href: "/schedule", label: "ดูตารางการแข่งขัน" }
+      : null;
 
   return (
     <>
-      <Banner />
-      <Hero config={config} teams={[...standings].sort((a, b) => a.id - b.id)} />
+      {show.banner && (
+        <Banner
+          url={config.bannerUrl}
+          alt={
+            config.bannerUrl
+              ? `${config.eventName} ${config.eventYear}`
+              : "กีฬาสีภายใน แคแสดสองแควเกมส์ โรงเรียนวิทยาศาสตร์จุฬาภรณราชวิทยาลัย พิษณุโลก และกำแพงเพชร"
+          }
+        />
+      )}
+      {show.hero && (
+        <Hero
+          config={config}
+          teams={[...standings].sort((a, b) => a.id - b.id)}
+          cta={heroCta}
+        />
+      )}
 
       <div className="container-page space-y-12 py-8 sm:space-y-16 sm:py-12">
-        {liveMatches.length > 0 && (
+        {show.liveMatches && liveMatches.length > 0 && (
           <section aria-label="กำลังแข่งขัน" className="space-y-3">
-            <SectionHeading title="กำลังแข่งขัน" eyebrow="Live Now" href="/schedule" />
+            <SectionHeading title="กำลังแข่งขัน" eyebrow="Live Now" href={scheduleHref} />
             {liveMatches.map((match) => (
               <MatchCard key={match.id} match={match} />
             ))}
           </section>
         )}
 
-        <Reveal className="space-y-4">
-          <Standings standings={standings} />
-          <TodayOverview date={today} matches={todayMatches} />
-        </Reveal>
+        {(show.standings || show.todayOverview) && (
+          <Reveal className="space-y-4">
+            {show.standings && <Standings standings={standings} />}
+            {show.todayOverview && <TodayOverview date={today} matches={todayMatches} />}
+          </Reveal>
+        )}
 
+        {show.latestResults && (
         <Reveal>
         <section>
-          <SectionHeading title="ผลการแข่งขันล่าสุด" eyebrow="Latest Results" href="/results" />
+          <SectionHeading title="ผลการแข่งขันล่าสุด" eyebrow="Latest Results" href={show.resultsPage ? "/results" : undefined} />
           {latestResults.length > 0 ? (
             <LatestResults matches={latestResults} />
           ) : (
@@ -65,10 +91,12 @@ export default async function HomePage() {
           )}
         </section>
         </Reveal>
+        )}
 
+        {show.todayMatches && (
         <Reveal>
         <section>
-          <SectionHeading title="การแข่งขันวันนี้" eyebrow="Today's Schedule" href="/schedule" />
+          <SectionHeading title="การแข่งขันวันนี้" eyebrow="Today's Schedule" href={scheduleHref} />
           {todayMatches.length > 0 ? (
             <div className="space-y-3">
               {todayMatches.map((match, i) => (
@@ -82,7 +110,9 @@ export default async function HomePage() {
           )}
         </section>
         </Reveal>
+        )}
 
+        {show.highlight && (
         <Reveal>
         <section aria-label="Highlight of the Day">
           {highlight ? (
@@ -92,7 +122,9 @@ export default async function HomePage() {
           )}
         </section>
         </Reveal>
+        )}
 
+        {show.announcements && (
         <Reveal>
         <section>
           <SectionHeading title="ข่าวสาร" eyebrow="Announcements" />
@@ -103,12 +135,15 @@ export default async function HomePage() {
           )}
         </section>
         </Reveal>
+        )}
 
+        {show.gallerySection && (
         <Reveal>
         <section aria-label="Gallery">
           <GalleryLink url={config.galleryDriveUrl} />
         </section>
         </Reveal>
+        )}
       </div>
     </>
   );

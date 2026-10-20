@@ -3,7 +3,16 @@ import Link from "next/link";
 import type { SiteConfig } from "@/lib/queries/config";
 import type { TeamRef } from "@/lib/queries/teams";
 
-export function Hero({ config, teams }: { config: SiteConfig; teams: TeamRef[] }) {
+export function Hero({
+  config,
+  teams,
+  cta,
+}: {
+  config: SiteConfig;
+  teams: TeamRef[];
+  /** The call-to-action button; omitted when the page it points to is switched off. */
+  cta: { href: string; label: string } | null;
+}) {
   return (
     <section className="bg-foreground text-background">
       <div className="container-page py-12 sm:py-16">
@@ -16,13 +25,15 @@ export function Hero({ config, teams }: { config: SiteConfig; teams: TeamRef[] }
           {config.eventName}
           <span className="block text-background/50">{config.eventYear}</span>
         </h1>
-        <Link
-          href="/schedule"
-          className="group mt-8 inline-flex h-11 animate-in fade-in slide-in-from-bottom-4 items-center gap-2 rounded-md bg-background px-5 text-sm font-semibold text-foreground transition-all delay-200 duration-700 fill-mode-backwards hover:bg-background/85 focus-visible:outline-background active:scale-95"
-        >
-          ดูตารางการแข่งขัน
-          <ArrowRight aria-hidden className="size-4 transition-transform group-hover:translate-x-1" />
-        </Link>
+        {cta && (
+          <Link
+            href={cta.href}
+            className="group mt-8 inline-flex h-11 animate-in fade-in slide-in-from-bottom-4 items-center gap-2 rounded-md bg-background px-5 text-sm font-semibold text-foreground transition-all delay-200 duration-700 fill-mode-backwards hover:bg-background/85 focus-visible:outline-background active:scale-95"
+          >
+            {cta.label}
+            <ArrowRight aria-hidden className="size-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        )}
       </div>
       {/* The four team identities, as a thin accent only. */}
       <div aria-hidden className="flex h-1.5">

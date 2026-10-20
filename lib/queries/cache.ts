@@ -8,6 +8,7 @@ export const TAGS = {
   matches: "matches",
   highlights: "highlights",
   announcements: "announcements",
+  practice: "practice",
   config: "config",
 } as const;
 

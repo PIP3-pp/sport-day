@@ -79,7 +79,7 @@ export default async function AdminSportsPage() {
                         action={deleteSport}
                         id={sport.id}
                         title={`ลบกีฬา “${sport.name}”`}
-                        description="กีฬาที่มีการแข่งขันอยู่แล้วจะลบไม่ได้ ให้ปิดการใช้งานแทน"
+                        description="กีฬาที่มีการแข่งขันหรือตารางซ้อมอยู่แล้วจะลบไม่ได้ ให้ปิดการใช้งานแทน"
                         triggerLabel={
                           <>
                             <Trash2 aria-hidden />

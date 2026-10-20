@@ -15,6 +15,13 @@
       "when": 1791259337227,
       "tag": "0001_live_status_audit_ratelimit",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792497725043,
+      "tag": "0002_practice_banner_visibility",
+      "breakpoints": true
     }
   ]
 }

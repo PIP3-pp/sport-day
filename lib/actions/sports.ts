@@ -43,7 +43,7 @@ export async function deleteSport(
     await db.delete(sports).where(eq(sports.id, parsed.data.id));
   } catch (error) {
     return failure(error, {
-      foreignKey: "ลบไม่ได้ เพราะมีการแข่งขันที่ใช้กีฬานี้อยู่ ให้ปิดการใช้งานแทน",
+      foreignKey: "ลบไม่ได้ เพราะมีการแข่งขันหรือตารางซ้อมที่ใช้กีฬานี้อยู่ ให้ปิดการใช้งานแทน",
     });
   }
   await audit(actor, "sport.delete", `#${parsed.data.id}`);
