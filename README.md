@@ -3,8 +3,8 @@
 ศูนย์รวมข้อมูลงานกีฬาสี: คะแนนรวม ผลการแข่งขัน ตารางแข่ง ข้อมูลทีมสี ข่าวสาร และลิงก์ภาพกิจกรรม
 พร้อมหลังบ้านสำหรับผู้ดูแล
 
-- **เว็บสาธารณะ** — `/`, `/schedule`, `/results`, `/teams`, `/teams/[slug]`, `/gallery`
-- **ผู้ดูแล** — `/admin` (Dashboard, Matches, Results, Teams, Sports, Highlights, Announcements, Activity, Settings)
+- **เว็บสาธารณะ** — `/`, `/practice` (ตารางซ้อม), `/schedule`, `/results`, `/teams`, `/teams/[slug]`, `/gallery`
+- **ผู้ดูแล** — `/admin` (Dashboard, ตารางซ้อม, Matches, Results, Teams, Sports, Highlights, Announcements, Activity, หน้าเว็บ, Settings)
 
 ## Stack
 
@@ -31,7 +31,7 @@ npm run dev
 | `DATABASE_URL` | Connection string ของ Prisma Postgres ([console.prisma.io](https://console.prisma.io) หรือ Vercel Marketplace) |
 | `BETTER_AUTH_SECRET` | คีย์เข้ารหัส session — สร้างด้วย `npx @better-auth/cli secret` |
 | `BETTER_AUTH_URL` | Origin ของเว็บ (`http://localhost:3000` หรือโดเมนจริง) |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob สำหรับอัปโหลดโลโก้/รูป Highlight (ไม่ใส่ก็ใช้งานส่วนอื่นได้) |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob สำหรับอัปโหลดโลโก้/รูป Highlight/รูปปก (ไม่ใส่ก็ใช้งานส่วนอื่นได้) |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | ใช้ครั้งเดียวตอน `npm run admin:create` (รหัสผ่านอย่างน้อย 10 ตัวอักษร) |
 
 ### ข้อมูลเดโม
@@ -42,6 +42,8 @@ npm run dev
 ## ขั้นตอนการใช้งานของผู้ดูแล
 
 1. **Sports** — เพิ่มชนิดกีฬา
+1. **ตารางซ้อม** — เพิ่มวัน เวลา และสถานที่ซ้อมของแต่ละสีในแต่ละกีฬา (สีหนึ่งมีได้หลายช่วงเวลา)
+   หน้าเว็บแสดงที่ `/practice` แยกตามกีฬา กรองตามสีได้
 2. **Teams** — แก้ชื่อ สโลแกน คำอธิบาย โลโก้ของ 4 สี
 3. **Matches** — สร้างการแข่งขัน เลือกรูปแบบ *แข่งเป็นคู่* หรือ *ทุกสีแข่งพร้อมกัน* (เช่น กรีฑา)
 4. **Results** — กด "เริ่มแข่ง" เมื่อเริ่มแข่ง (หน้าเว็บจะขึ้นสถานะ "กำลังแข่งขัน") แล้วเมื่อแข่งจบ
@@ -50,6 +52,9 @@ npm run dev
 5. **Highlights** — เลือก Highlight of the Day (วันละ 1 รายการ)
 6. **Activity** — ดูว่าใครแก้ไขอะไรเมื่อไร (100 รายการล่าสุด)
 7. **Announcements / Settings** — ข่าวสาร ชื่องาน ปี สโลแกน ลิงก์ Google Drive
+8. **หน้าเว็บ** — เปลี่ยนรูปปกหน้าแรก (PNG, JPEG, GIF, SVG, WebP, MOV, MP4 ไม่เกิน 50 MB
+   อัปโหลดจาก browser ตรงไป Vercel Blob) และสวิตช์เปิด/ปิดแต่ละส่วนของหน้าแรกและแต่ละหน้าในเมนู
+   หน้าที่ปิดจะหายจากเมนูและตอบ 404 — ค่าเริ่มต้นปิด **ตารางการแข่งขัน** ไว้ (ระบบยังอยู่ครบ เปิดกลับได้ทุกเมื่อ)
 
 ## หลักการสำคัญ
 

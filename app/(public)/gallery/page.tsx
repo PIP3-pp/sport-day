@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { GalleryLink } from "@/components/home/gallery-cta";
 import { PageHeader } from "@/components/shared/section-heading";
-import { getSiteConfig } from "@/lib/queries/config";
+import { getSiteConfig, requirePageVisible } from "@/lib/queries/config";
 
 export const metadata: Metadata = { title: "Gallery" };
 export const dynamic = "force-dynamic";
 
 export default async function GalleryPage() {
+  await requirePageVisible("galleryPage");
   const config = await getSiteConfig();
   return (
     <>

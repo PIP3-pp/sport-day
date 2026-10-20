@@ -5,12 +5,14 @@ import { PageHeader } from "@/components/shared/section-heading";
 import { CountUp } from "@/components/shared/motion";
 import { RevealItem } from "@/components/shared/reveal";
 import { TeamLogo } from "@/components/shared/team-badge";
+import { requirePageVisible } from "@/lib/queries/config";
 import { getStandings } from "@/lib/queries/standings";
 
 export const metadata: Metadata = { title: "ทีมสี" };
 export const dynamic = "force-dynamic";
 
 export default async function TeamsPage() {
+  await requirePageVisible("teamsPage");
   const standings = await getStandings();
 
   return (

@@ -2,10 +2,12 @@
 
 import {
   CalendarDays,
+  ClipboardList,
   Dumbbell,
   History,
   LayoutDashboard,
   Megaphone,
+  MonitorCog,
   Settings,
   Star,
   Trophy,
@@ -18,6 +20,7 @@ import { cn } from "@/lib/utils";
 
 const LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/practice", label: "ตารางซ้อม", icon: ClipboardList },
   { href: "/admin/matches", label: "Matches", icon: CalendarDays },
   { href: "/admin/results", label: "Results", icon: Trophy },
   { href: "/admin/teams", label: "Teams", icon: Users },
@@ -25,6 +28,7 @@ const LINKS = [
   { href: "/admin/highlights", label: "Highlights", icon: Star },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/activity", label: "Activity", icon: History },
+  { href: "/admin/display", label: "หน้าเว็บ", icon: MonitorCog },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

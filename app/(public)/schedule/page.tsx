@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/shared/section-heading";
 import { TeamFilter } from "@/components/schedule/team-filter";
 import { SportFilter } from "@/components/shared/sport-filter";
 import { formatDisplayDate, isValidDateString, todayInBangkok } from "@/lib/date";
+import { requirePageVisible } from "@/lib/queries/config";
 import { getMatchDates, getMatchesByDate } from "@/lib/queries/matches";
 import { getActiveSports } from "@/lib/queries/sports";
 import { getTeams } from "@/lib/queries/teams";
@@ -26,6 +27,7 @@ export default async function SchedulePage({
 }: {
   searchParams: Promise<{ date?: string; sport?: string; team?: string }>;
 }) {
+  await requirePageVisible("schedulePage");
   const { date: requested, sport, team } = await searchParams;
   const today = todayInBangkok();
   const [dates, sports, teams] = await Promise.all([

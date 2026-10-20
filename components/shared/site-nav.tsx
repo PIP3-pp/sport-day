@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Home, Images, Trophy, Users } from "lucide-react";
+import { CalendarDays, ClipboardList, Home, Images, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 const LINKS = [
   { href: "/", label: "Home", icon: Home },
+  { href: "/practice", label: "ตารางซ้อม", icon: ClipboardList },
   { href: "/schedule", label: "Schedule", icon: CalendarDays },
   { href: "/results", label: "Results", icon: Trophy },
   { href: "/teams", label: "Teams", icon: Users },
@@ -20,13 +21,19 @@ function useIsActive() {
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/** Menu links, minus the pages an admin has switched off. */
+function visibleLinks(hidden: string[]) {
+  return LINKS.filter((link) => !hidden.includes(link.href));
+}
+
 /** Desktop: links in the top bar. */
-export function DesktopNav() {
+export function DesktopNav({ hidden }: { hidden: string[] }) {
   const isActive = useIsActive();
+  const links = visibleLinks(hidden);
   return (
     <nav aria-label="เมนูหลัก" className="hidden md:block">
       <ul className="flex items-center gap-1">
-        {LINKS.map(({ href, label }) => (
+        {links.map(({ href, label }) => (
           <li key={href}>
             <Link
               href={href}
@@ -53,15 +60,19 @@ export function DesktopNav() {
 }
 
 /** Mobile: a fixed tab bar within thumb reach. */
-export function MobileNav() {
+export function MobileNav({ hidden }: { hidden: string[] }) {
   const isActive = useIsActive();
+  const links = visibleLinks(hidden);
   return (
     <nav
       aria-label="เมนูหลัก"
       className="fixed inset-x-0 bottom-0 z-40 border-t bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
     >
-      <ul className="grid grid-cols-5">
-        {LINKS.map(({ href, label, icon: Icon }) => (
+      <ul
+        className="grid"
+        style={{ gridTemplateColumns: `repeat(${links.length}, minmax(0, 1fr))` }}
+      >
+        {links.map(({ href, label, icon: Icon }) => (
           <li key={href}>
             <Link
               href={href}

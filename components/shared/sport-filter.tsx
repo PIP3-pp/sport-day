@@ -8,7 +8,7 @@ export function SportFilter({
   selectedId,
   hrefFor,
 }: {
-  sports: Sport[];
+  sports: Pick<Sport, "id" | "name" | "icon">[];
   selectedId: number | undefined;
   /** Builds the link for a sport, or for "all" when called with undefined. */
   hrefFor: (sportId: number | undefined) => string;

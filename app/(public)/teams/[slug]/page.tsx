@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { ShowMore } from "@/components/shared/show-more";
 import { TeamLogo } from "@/components/shared/team-badge";
 import { parseSteps, RESULTS_MAX_STEPS, RESULTS_PAGE_SIZE } from "@/lib/pagination";
+import { requirePageVisible } from "@/lib/queries/config";
 import { getTeamResults } from "@/lib/queries/matches";
 import { getStandings } from "@/lib/queries/standings";
 import { getTeamBySlug } from "@/lib/queries/teams";
@@ -25,6 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function TeamPage({ params, searchParams }: Props) {
+  await requirePageVisible("teamsPage");
   const { slug } = await params;
   const { show } = await searchParams;
   const team = await getTeamBySlug(slug);

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AutoRefresh } from "@/components/shared/auto-refresh";
 import { DesktopNav, MobileNav } from "@/components/shared/site-nav";
 import { getSiteConfigSafe } from "@/lib/queries/config";
+import { hiddenPages } from "@/lib/visibility";
 
 export default async function PublicLayout({
   children,
@@ -11,6 +12,7 @@ export default async function PublicLayout({
 }) {
   const config = await getSiteConfigSafe();
   const title = `${config.eventName} ${config.eventYear}`;
+  const hidden = hiddenPages(config.visibility);
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -36,7 +38,7 @@ export default async function PublicLayout({
               {title}
             </span>
           </Link>
-          <DesktopNav />
+          <DesktopNav hidden={hidden} />
         </div>
       </header>
 
@@ -50,7 +52,7 @@ export default async function PublicLayout({
           {config.slogan && <p>{config.slogan}</p>}
         </div>
       </footer>
-      <MobileNav />
+      <MobileNav hidden={hidden} />
       <AutoRefresh />
     </div>
   );

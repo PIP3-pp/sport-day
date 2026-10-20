@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/shared/section-heading";
 import { ShowMore } from "@/components/shared/show-more";
 import { SportFilter } from "@/components/shared/sport-filter";
 import { parseSteps, RESULTS_MAX_STEPS, RESULTS_PAGE_SIZE } from "@/lib/pagination";
+import { requirePageVisible } from "@/lib/queries/config";
 import { getCompletedMatches } from "@/lib/queries/matches";
 import { getActiveSports } from "@/lib/queries/sports";
 
@@ -17,6 +18,7 @@ export default async function ResultsPage({
 }: {
   searchParams: Promise<{ sport?: string; show?: string }>;
 }) {
+  await requirePageVisible("resultsPage");
   const { sport, show } = await searchParams;
   const sports = await getActiveSports();
   const sportId = sports.find((s) => String(s.id) === sport)?.id;

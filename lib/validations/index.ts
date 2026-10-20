@@ -72,6 +72,27 @@ export const matchSchema = z
     }
   });
 
+const timeString = (label: string) =>
+  z
+    .string({ error: `กรุณาเลือก${label}` })
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, `${label}ไม่ถูกต้อง`);
+
+export const practiceSchema = z
+  .object({
+    id: optionalId,
+    sportId: z.preprocess(emptyToUndefined, id.optional()).refine((v) => v !== undefined, "กรุณาเลือกกีฬา"),
+    teamId: z.preprocess(emptyToUndefined, id.optional()).refine((v) => v !== undefined, "กรุณาเลือกสี"),
+    days: requiredText("วันซ้อม", 80),
+    startTime: timeString("เวลาเริ่ม"),
+    endTime: timeString("เวลาเลิก"),
+    location: requiredText("สถานที่", 120),
+    note: optionalText(200),
+  })
+  .refine((value) => value.endTime > value.startTime, {
+    path: ["endTime"],
+    message: "เวลาเลิกต้องหลังเวลาเริ่ม",
+  });
+
 export const highlightSchema = z.object({
   id: optionalId,
   date: dateString,
