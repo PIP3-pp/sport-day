@@ -77,11 +77,11 @@ npm run dev
 | `npm run dev` / `build` / `start` | รันเว็บ |
 | `npm run lint` / `typecheck` / `test` | ตรวจโค้ดและรัน unit test |
 | `npm run db:generate` | สร้างไฟล์ migration หลังแก้ [db/schema.ts](db/schema.ts) |
-| `npm run db:migrate` | apply migration (บน Vercel รันให้อัตโนมัติก่อน build ผ่านสคริปต์ `vercel-build`) |
+| `npm run db:migrate` | apply migration (บน Vercel production รันให้อัตโนมัติก่อน build ผ่านสคริปต์ `vercel-build` (preview ข้าม)) |
 
 ## Deploy (Vercel)
 
 1. Push ขึ้น GitHub แล้ว import โปรเจกต์ใน Vercel
 2. ใส่ environment variables ตามตารางด้านบน (`BETTER_AUTH_URL` = โดเมนจริง)
 3. รัน `npm run db:seed`, `npm run admin:create` กับฐานข้อมูล production หนึ่งครั้ง
-   (migration รันเองทุกครั้งที่ Vercel build — ถ้า migration ล้ม deploy นั้นจะล้มและเว็บเดิมยังทำงานต่อ)
+   (migration รันเองทุกครั้งที่ Vercel build production — ถ้า migration ล้ม deploy นั้นจะล้มและเว็บเดิมยังทำงานต่อ)
