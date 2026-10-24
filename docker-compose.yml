@@ -1,0 +1,24 @@
+# Local Postgres for development (`npm run db:up`). Production stays on Prisma Postgres.
+# Creates two databases: sportday_dev (DATABASE_URL in .env.local) and
+# sportday_test (TEST_DATABASE_URL for `npm run test:db`, emptied by every run).
+services:
+  db:
+    image: postgres:17
+    container_name: sportday-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sportday_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - sportday-db:/var/lib/postgresql/data
+      - ./db/docker-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  sportday-db:

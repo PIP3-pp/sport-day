@@ -13,14 +13,37 @@ Prisma Postgres + Drizzle ORM · Better Auth · Zod · Vercel Blob
 
 ## เริ่มใช้งาน
 
+ตอนพัฒนาใช้ Postgres ใน Docker บนเครื่องตัวเอง ([docker-compose.yml](docker-compose.yml))
+**ไม่ต่อฐานข้อมูล production** — ต้องมี Docker Desktop
+
 ```bash
 npm install
 cp .env.example .env.local   # แล้วกรอกค่าตามด้านล่าง
+npm run db:up                # เปิด Postgres ในเครื่อง (พอร์ต 5433: sportday_dev + sportday_test)
 npm run db:migrate           # สร้างตาราง
 npm run db:seed              # 4 ทีมสี + ค่าตั้งต้นของงาน
+npm run db:seed-demo         # (ไม่บังคับ) ข้อมูลตัวอย่าง
 npm run admin:create         # สร้างบัญชีผู้ดูแลจาก ADMIN_EMAIL / ADMIN_PASSWORD
 npm run dev
 ```
+
+`npm run db:down` หยุดฐานข้อมูล (ข้อมูลยังอยู่ใน Docker volume `sportday-db`)
+ถ้าสลับ `DATABASE_URL` ไปมา ให้ลบโฟลเดอร์ `.next` ก่อนรัน `npm run dev` เพราะ Next.js เก็บผล query ไว้ใน `.next/cache`
+
+### ฐานข้อมูล production
+
+URL ของ production เก็บแยกไว้ใน `.env.production-db` (ไม่ขึ้น git และ `next dev` / test ไม่โหลดไฟล์นี้)
+มีแค่คำสั่งที่ลงท้ายด้วย `:prod` ที่ใช้ไฟล์นี้:
+
+```
+DATABASE_URL=<connection string ของ Prisma Postgres>
+```
+
+| คำสั่ง | |
+|---|---|
+| `npm run db:migrate:prod` | apply migration กับ production |
+| `npm run db:seed:prod` | seed ทีมสีและค่าตั้งต้นใน production (รันซ้ำได้) |
+| `npm run admin:create:prod` | สร้างบัญชีผู้ดูแลใน production |
 
 ### Environment variables
 
@@ -28,7 +51,8 @@ npm run dev
 
 | ตัวแปร | ใช้ทำอะไร |
 |---|---|
-| `DATABASE_URL` | Connection string ของ Prisma Postgres ([console.prisma.io](https://console.prisma.io) หรือ Vercel Marketplace) |
+| `DATABASE_URL` | ในเครื่อง: `postgres://postgres:postgres@localhost:5433/sportday_dev` · บน Vercel: Prisma Postgres ([console.prisma.io](https://console.prisma.io) หรือ Vercel Marketplace) |
+| `TEST_DATABASE_URL` | ในเครื่อง: `postgres://postgres:postgres@localhost:5433/sportday_test` สำหรับ `npm run test:db` |
 | `BETTER_AUTH_SECRET` | คีย์เข้ารหัส session — สร้างด้วย `npx @better-auth/cli secret` |
 | `BETTER_AUTH_URL` | Origin ของเว็บ (`http://localhost:3000` หรือโดเมนจริง) |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob สำหรับอัปโหลดโลโก้/รูป Highlight/รูปปก (ไม่ใส่ก็ใช้งานส่วนอื่นได้) |
@@ -37,7 +61,8 @@ npm run dev
 ### ข้อมูลเดโม
 
 `npm run db:seed-demo` ใส่กีฬา การแข่งขัน ผล และประกาศตัวอย่างสำหรับพัฒนา/พรีวิว
-**ห้ามรันกับฐานข้อมูลจริง** (สคริปต์ปฏิเสธเมื่อ `NODE_ENV=production` และเมื่อมีการแข่งขันอยู่แล้ว)
+**ห้ามรันกับฐานข้อมูลจริง** (สคริปต์ปฏิเสธเมื่อ `NODE_ENV=production`, เมื่อ `DATABASE_URL` ไม่ใช่ localhost
+และเมื่อมีการแข่งขันอยู่แล้ว)
 
 ## ขั้นตอนการใช้งานของผู้ดูแล
 
@@ -78,26 +103,18 @@ npm run dev
 | `npm run lint` / `typecheck` / `test` | ตรวจโค้ดและรัน unit test (ไม่ต้องใช้ฐานข้อมูล) |
 | `npm run test:db` | รัน integration test กับ Postgres จริง (ดูด้านล่าง) |
 | `npm run db:generate` | สร้างไฟล์ migration หลังแก้ [db/schema.ts](db/schema.ts) |
-| `npm run db:migrate` | apply migration (ต้องรันเองกับฐานข้อมูล production ก่อน deploy โค้ดที่เปลี่ยน schema) |
+| `npm run db:migrate` | apply migration กับฐานข้อมูลในเครื่อง (production ใช้ `db:migrate:prod` ก่อน deploy โค้ดที่เปลี่ยน schema) |
+| `npm run db:up` / `db:down` | เปิด / หยุด Postgres ใน Docker |
 
 ### ทดสอบกับฐานข้อมูล
 
 `npm run test:db` ทดสอบการบันทึก/ลบผล คะแนนรวม และการเริ่มแข่ง กับ Postgres จริง
 ([tests/db](tests/db)) โดย apply migration ใน `db/migrations` ให้เองก่อนเริ่ม และ**ล้างข้อมูลทุกตาราง**ระหว่างแต่ละ test
 
-- ใช้เฉพาะ `TEST_DATABASE_URL` เท่านั้น **ไม่ใช้ `DATABASE_URL` เด็ดขาด** (ใน `.env.local` อาจชี้ไป production)
-  ถ้าไม่ได้ตั้งค่า หรือชื่อฐานข้อมูลไม่มีคำว่า `test` จะหยุดทันทีโดยไม่แตะฐานข้อมูล
-- ใช้ฐานข้อมูลทิ้งได้ เช่น Postgres ใน Docker:
-
-```bash
-docker run --rm -d --name sportday-test-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=sportday_test -p 5433:5432 postgres:17
-```
-
-```bash
-TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5433/sportday_test npm run test:db
-```
-
-(PowerShell: `$env:TEST_DATABASE_URL="postgres://postgres:postgres@localhost:5433/sportday_test"; npm run test:db`)
+- ใช้เฉพาะ `TEST_DATABASE_URL` เท่านั้น **ไม่ใช้ `DATABASE_URL` เด็ดขาด**
+  ถ้าไม่ได้ตั้งค่า, ซ้ำกับ `DATABASE_URL` หรือชื่อฐานข้อมูลไม่มีคำว่า `test` จะหยุดทันทีโดยไม่แตะฐานข้อมูล
+- ในเครื่อง: `npm run db:up` แล้ว `npm run test:db` ได้เลย (อ่าน `TEST_DATABASE_URL` จาก `.env.local`
+  ซึ่งชี้ไปที่ `sportday_test` ใน Docker)
 
 CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) รันชุดนี้กับ Postgres service container ทุก push/PR
 
@@ -105,5 +122,6 @@ CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) รันชุดน�
 
 1. Push ขึ้น GitHub แล้ว import โปรเจกต์ใน Vercel
 2. ใส่ environment variables ตามตารางด้านบน (`BETTER_AUTH_URL` = โดเมนจริง)
-3. รัน `npm run db:migrate`, `npm run db:seed`, `npm run admin:create` กับฐานข้อมูล production หนึ่งครั้ง
-   (ทุกครั้งที่มี migration ใหม่ ต้องรัน `npm run db:migrate` เองก่อน push ขึ้น main)
+3. ใส่ URL ของ production ใน `.env.production-db` (ดู [ฐานข้อมูล production](#ฐานข้อมูล-production))
+   แล้วรัน `npm run db:migrate:prod`, `npm run db:seed:prod`, `npm run admin:create:prod` หนึ่งครั้ง
+   (ทุกครั้งที่มี migration ใหม่ ต้องรัน `npm run db:migrate:prod` เองก่อน push ขึ้น main)

@@ -9,12 +9,17 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --project unit",
-    "test:db": "vitest run --project db",
+    "test:db": "node --env-file-if-exists=.env.local ./node_modules/vitest/vitest.mjs run --project db",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose stop",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:migrate:prod": "node --env-file=.env.production-db ./node_modules/drizzle-kit/bin.cjs migrate",
     "db:seed": "tsx db/seed.ts",
+    "db:seed:prod": "tsx --env-file=.env.production-db db/seed.ts",
     "db:seed-demo": "tsx db/seed-demo.ts",
-    "admin:create": "tsx scripts/create-admin.ts"
+    "admin:create": "tsx scripts/create-admin.ts",
+    "admin:create:prod": "tsx --env-file=.env.production-db scripts/create-admin.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

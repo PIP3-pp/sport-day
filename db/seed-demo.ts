@@ -12,6 +12,11 @@ async function main() {
   if (process.env.NODE_ENV === "production") {
     throw new Error("Refusing to seed demo data in production.");
   }
+  // Only the local Docker database (npm run db:up) may receive demo data.
+  const host = process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).hostname : "";
+  if (!["localhost", "127.0.0.1", "[::1]"].includes(host)) {
+    throw new Error(`Refusing to seed demo data into "${host || "no database"}": use a local database.`);
+  }
   const { db, pool } = await import("./index");
   const s = await import("./schema");
 
