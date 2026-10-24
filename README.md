@@ -75,9 +75,31 @@ npm run dev
 | คำสั่ง | |
 |---|---|
 | `npm run dev` / `build` / `start` | รันเว็บ |
-| `npm run lint` / `typecheck` / `test` | ตรวจโค้ดและรัน unit test |
+| `npm run lint` / `typecheck` / `test` | ตรวจโค้ดและรัน unit test (ไม่ต้องใช้ฐานข้อมูล) |
+| `npm run test:db` | รัน integration test กับ Postgres จริง (ดูด้านล่าง) |
 | `npm run db:generate` | สร้างไฟล์ migration หลังแก้ [db/schema.ts](db/schema.ts) |
 | `npm run db:migrate` | apply migration (ต้องรันเองกับฐานข้อมูล production ก่อน deploy โค้ดที่เปลี่ยน schema) |
+
+### ทดสอบกับฐานข้อมูล
+
+`npm run test:db` ทดสอบการบันทึก/ลบผล คะแนนรวม และการเริ่มแข่ง กับ Postgres จริง
+([tests/db](tests/db)) โดย apply migration ใน `db/migrations` ให้เองก่อนเริ่ม และ**ล้างข้อมูลทุกตาราง**ระหว่างแต่ละ test
+
+- ใช้เฉพาะ `TEST_DATABASE_URL` เท่านั้น **ไม่ใช้ `DATABASE_URL` เด็ดขาด** (ใน `.env.local` อาจชี้ไป production)
+  ถ้าไม่ได้ตั้งค่า หรือชื่อฐานข้อมูลไม่มีคำว่า `test` จะหยุดทันทีโดยไม่แตะฐานข้อมูล
+- ใช้ฐานข้อมูลทิ้งได้ เช่น Postgres ใน Docker:
+
+```bash
+docker run --rm -d --name sportday-test-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=sportday_test -p 5433:5432 postgres:17
+```
+
+```bash
+TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5433/sportday_test npm run test:db
+```
+
+(PowerShell: `$env:TEST_DATABASE_URL="postgres://postgres:postgres@localhost:5433/sportday_test"; npm run test:db`)
+
+CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) รันชุดนี้กับ Postgres service container ทุก push/PR
 
 ## Deploy (Vercel)
 
