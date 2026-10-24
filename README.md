@@ -30,14 +30,16 @@ npm run dev
 `npm run db:down` หยุดฐานข้อมูล (ข้อมูลยังอยู่ใน Docker volume `sportday-db`)
 ถ้าสลับ `DATABASE_URL` ไปมา ให้ลบโฟลเดอร์ `.next` ก่อนรัน `npm run dev` เพราะ Next.js เก็บผล query ไว้ใน `.next/cache`
 
-### ฐานข้อมูล production
+### แยก env สำหรับ dev และ production
 
-URL ของ production เก็บแยกไว้ใน `.env.production-db` (ไม่ขึ้น git และ `next dev` / test ไม่โหลดไฟล์นี้)
-มีแค่คำสั่งที่ลงท้ายด้วย `:prod` ที่ใช้ไฟล์นี้:
+| ไฟล์ | ใช้กับ | ค่าข้างใน |
+|---|---|---|
+| `.env.local` | `npm run dev`, test, คำสั่ง db ปกติ | ฐานข้อมูล Docker, Blob store `sport-day-blob-dev`, `BETTER_AUTH_SECRET` และบัญชีผู้ดูแลของ dev เท่านั้น |
+| `.env.prod` | เฉพาะคำสั่งที่ลงท้ายด้วย `:prod` | `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BLOB_READ_WRITE_TOKEN`, `ADMIN_*` ของ production |
 
-```
-DATABASE_URL=<connection string ของ Prisma Postgres>
-```
+ทั้งสองไฟล์ไม่ขึ้น git และค่าใน `.env.local` ไม่ซ้ำกับ production เลย จึงทดสอบทุกอย่างในเครื่องได้
+(รวมถึง login และอัปโหลดรูป) โดยไม่กระทบเว็บจริง · เว็บบน Vercel ใช้ environment variables ของ Vercel
+ไม่ได้อ่านไฟล์ใดในนี้ · คำสั่ง `:prod` ใช้ค่าใน `.env.prod` ก่อน ตัวที่ไม่มีจึงอ่านจาก `.env.local`
 
 | คำสั่ง | |
 |---|---|
@@ -122,6 +124,6 @@ CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) รันชุดน�
 
 1. Push ขึ้น GitHub แล้ว import โปรเจกต์ใน Vercel
 2. ใส่ environment variables ตามตารางด้านบน (`BETTER_AUTH_URL` = โดเมนจริง)
-3. ใส่ URL ของ production ใน `.env.production-db` (ดู [ฐานข้อมูล production](#ฐานข้อมูล-production))
+3. ใส่ค่าของ production ใน `.env.prod` (ดู [แยก env สำหรับ dev และ production](#แยก-env-สำหรับ-dev-และ-production))
    แล้วรัน `npm run db:migrate:prod`, `npm run db:seed:prod`, `npm run admin:create:prod` หนึ่งครั้ง
    (ทุกครั้งที่มี migration ใหม่ ต้องรัน `npm run db:migrate:prod` เองก่อน push ขึ้น main)
