@@ -112,11 +112,18 @@ export async function deleteResult(
   const matchId = parsed.data.id;
 
   try {
-    await db.transaction(async (tx) => {
-      await tx.delete(results).where(eq(results.matchId, matchId));
+    const deleted = await db.transaction(async (tx) => {
+      const removed = await tx
+        .delete(results)
+        .where(eq(results.matchId, matchId))
+        .returning({ id: results.id });
+      // Nothing to undo: leave the match (e.g. postponed or cancelled) as it is.
+      if (removed.length === 0) return false;
       await tx.delete(scorePoints).where(eq(scorePoints.matchId, matchId));
       await tx.update(matches).set({ status: "scheduled" }).where(eq(matches.id, matchId));
+      return true;
     });
+    if (!deleted) return { ok: false, message: "การแข่งขันนี้ยังไม่มีผลที่บันทึกไว้" };
   } catch (error) {
     return failure(error);
   }

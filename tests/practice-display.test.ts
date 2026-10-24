@@ -53,7 +53,8 @@ describe("banner", () => {
   it("accepts supported files in the Blob store only", () => {
     const blob = "https://abc.public.blob.vercel-storage.com/banner/cover-x1.mov";
     expect(isAllowedBannerUrl(blob)).toBe(true);
-    expect(isAllowedBannerUrl(blob.replace(".mov", ".svg"))).toBe(true);
+    expect(isAllowedBannerUrl(blob.replace(".mov", ".svg"))).toBe(false);
+    expect(isAllowedBannerUrl(blob.replace("/banner/", "/teams/"))).toBe(false);
     expect(isAllowedBannerUrl(blob.replace(".mov", ".exe"))).toBe(false);
     expect(isAllowedBannerUrl("https://evil.example.com/banner/cover.png")).toBe(false);
     expect(isAllowedBannerUrl("http://abc.public.blob.vercel-storage.com/a.png")).toBe(false);

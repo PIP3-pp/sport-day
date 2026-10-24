@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/table";
 import { deleteSport, saveSport } from "@/lib/actions/sports";
 import { fetchSports } from "@/lib/queries/sports";
+import { requireAdmin } from "@/lib/require-admin";
 
 export default async function AdminSportsPage() {
+  await requireAdmin();
   const sports = await fetchSports();
 
   return (

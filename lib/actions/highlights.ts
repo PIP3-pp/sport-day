@@ -9,6 +9,7 @@ import { highlightSchema, idSchema } from "@/lib/validations";
 import {
   adminActor,
   audit,
+  deleteBlobs,
   failure,
   invalid,
   invalidate,
@@ -29,6 +30,7 @@ export async function saveHighlight(
   const upload = await uploadImage(formData.get("image"), "highlights");
   if (!upload.ok) return { ok: false, fieldErrors: { image: [upload.message] } };
 
+  const removeImage = formData.get("removeImage") === "on" && !upload.url;
   const values = {
     date,
     title,
@@ -36,11 +38,19 @@ export async function saveHighlight(
     matchId: matchId ?? null,
     isActive,
     ...(upload.url ? { imageUrl: upload.url } : {}),
-    ...(formData.get("removeImage") === "on" && !upload.url ? { imageUrl: null } : {}),
+    ...(removeImage ? { imageUrl: null } : {}),
   };
 
+  let previousImage: string | null = null;
   try {
     await db.transaction(async (tx) => {
+      if (id) {
+        const [current] = await tx
+          .select({ imageUrl: highlights.imageUrl })
+          .from(highlights)
+          .where(eq(highlights.id, id));
+        previousImage = current?.imageUrl ?? null;
+      }
       // Activating a highlight deactivates any other one on the same date.
       if (isActive) {
         await tx
@@ -58,11 +68,13 @@ export async function saveHighlight(
       else await tx.insert(highlights).values(values);
     });
   } catch (error) {
+    await deleteBlobs(upload.url);
     return failure(error, {
       unique: "วันนี้มี Highlight ที่เปิดใช้งานอยู่แล้ว กรุณาลองใหม่อีกครั้ง",
       foreignKey: "ไม่พบการแข่งขันที่เลือก",
     });
   }
+  if (upload.url || removeImage) await deleteBlobs(previousImage);
   await audit(actor, id ? "highlight.update" : "highlight.create", `${date} ${title}`);
   invalidate(TAGS.highlights);
   return { ok: true, message: "บันทึก Highlight แล้ว" };
@@ -77,11 +89,16 @@ export async function deleteHighlight(
   const parsed = idSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return invalid(parsed.error);
 
+  let removed: { imageUrl: string | null }[];
   try {
-    await db.delete(highlights).where(eq(highlights.id, parsed.data.id));
+    removed = await db
+      .delete(highlights)
+      .where(eq(highlights.id, parsed.data.id))
+      .returning({ imageUrl: highlights.imageUrl });
   } catch (error) {
     return failure(error);
   }
+  await deleteBlobs(...removed.map((row) => row.imageUrl));
   await audit(actor, "highlight.delete", `#${parsed.data.id}`);
   invalidate(TAGS.highlights);
   return { ok: true, message: "ลบ Highlight แล้ว" };

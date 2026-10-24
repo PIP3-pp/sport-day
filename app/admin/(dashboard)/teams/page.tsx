@@ -6,8 +6,10 @@ import { TeamLogo } from "@/components/shared/team-badge";
 import { Button } from "@/components/ui/button";
 import { updateTeam } from "@/lib/actions/teams";
 import { fetchTeams } from "@/lib/queries/teams";
+import { requireAdmin } from "@/lib/require-admin";
 
 export default async function AdminTeamsPage() {
+  await requireAdmin();
   const teams = await fetchTeams();
 
   return (

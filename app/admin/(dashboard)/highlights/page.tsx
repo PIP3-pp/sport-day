@@ -15,8 +15,10 @@ import { deleteHighlight, saveHighlight } from "@/lib/actions/highlights";
 import { formatThaiDate, todayInBangkok } from "@/lib/date";
 import { fetchHighlights } from "@/lib/queries/highlights";
 import { fetchAllMatches } from "@/lib/queries/matches";
+import { requireAdmin } from "@/lib/require-admin";
 
 export default async function AdminHighlightsPage() {
+  await requireAdmin();
   const [highlights, matches] = await Promise.all([fetchHighlights(), fetchAllMatches()]);
   const today = todayInBangkok();
 

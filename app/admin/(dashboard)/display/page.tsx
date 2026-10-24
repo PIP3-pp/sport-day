@@ -2,8 +2,10 @@ import { AdminPageHeader, Panel } from "@/components/admin/admin-page";
 import { BannerUploader } from "@/components/admin/banner-uploader";
 import { VisibilitySwitches } from "@/components/admin/visibility-switches";
 import { fetchSiteConfig } from "@/lib/queries/config";
+import { requireAdmin } from "@/lib/require-admin";
 
 export default async function AdminDisplayPage() {
+  await requireAdmin();
   const config = await fetchSiteConfig();
 
   return (

@@ -9,7 +9,7 @@ const MEDIA_CLASS = "h-auto w-full object-cover object-top sm:max-h-[calc(100svh
 
 /**
  * Event key visual at the very top of the home page: the uploaded cover
- * (image, GIF, SVG or video) or the bundled default, with a gentle parallax.
+ * (image, GIF or video) or the bundled default, with a gentle parallax.
  */
 export function Banner({ url, alt }: { url: string | null; alt: string }) {
   const ref = useRef<HTMLElement>(null);
@@ -20,7 +20,7 @@ export function Banner({ url, alt }: { url: string | null; alt: string }) {
   const mediaScale = useTransform(scrollYProgress, [0, 1], [1, reduceMotion ? 1 : 1.06]);
 
   const src = url ?? DEFAULT_BANNER_URL;
-  // The optimizer would flatten GIF animation and refuses SVG; serve both as-is.
+  // The optimizer would flatten GIF animation and refuses SVG (allowed by older versions); serve both as-is.
   const unoptimized = ["gif", "svg"].includes(fileExtension(new URL(src, "https://x").pathname));
 
   return (

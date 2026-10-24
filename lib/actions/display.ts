@@ -1,5 +1,6 @@
 "use server";
 
+import { head } from "@vercel/blob";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { siteConfig } from "@/db/schema";
@@ -7,7 +8,21 @@ import type { ActionState } from "@/lib/action-state";
 import { isAllowedBannerUrl } from "@/lib/banner";
 import { TAGS } from "@/lib/queries/cache";
 import { isSectionKey, SECTIONS } from "@/lib/visibility";
-import { adminActor, audit, failure, invalidate, UNAUTHORIZED } from "./helpers";
+import { adminActor, audit, deleteBlobs, failure, invalidate, UNAUTHORIZED } from "./helpers";
+
+/**
+ * A supported file that really is in this project's Blob store: `head` uses our
+ * own token, so a file in any other store (or one that doesn't exist) is rejected.
+ */
+async function isOwnBannerFile(url: string): Promise<boolean> {
+  if (!isAllowedBannerUrl(url) || !process.env.BLOB_READ_WRITE_TOKEN) return false;
+  try {
+    await head(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const NO_CONFIG: ActionState = {
   ok: false,
@@ -45,20 +60,27 @@ export async function setSectionVisibility(key: string, visible: boolean): Promi
 export async function setBanner(url: string | null): Promise<ActionState> {
   const actor = await adminActor();
   if (!actor) return UNAUTHORIZED;
-  if (url !== null && (typeof url !== "string" || !isAllowedBannerUrl(url))) {
+  if (url !== null && (typeof url !== "string" || !(await isOwnBannerFile(url)))) {
     return { ok: false, message: "ไฟล์รูปปกไม่ถูกต้อง" };
   }
 
+  let previous: string | null = null;
   try {
-    const updated = await db
-      .update(siteConfig)
-      .set({ bannerUrl: url })
-      .where(eq(siteConfig.id, 1))
-      .returning({ id: siteConfig.id });
-    if (updated.length === 0) return NO_CONFIG;
+    const [current] = await db
+      .select({ bannerUrl: siteConfig.bannerUrl })
+      .from(siteConfig)
+      .where(eq(siteConfig.id, 1));
+    if (!current) {
+      await deleteBlobs(url);
+      return NO_CONFIG;
+    }
+    previous = current.bannerUrl;
+    await db.update(siteConfig).set({ bannerUrl: url }).where(eq(siteConfig.id, 1));
   } catch (error) {
+    await deleteBlobs(url);
     return failure(error);
   }
+  if (previous !== url) await deleteBlobs(previous);
   await audit(actor, "display.banner", url ? "เปลี่ยนรูปปก" : "ใช้รูปปกเริ่มต้น");
   invalidate(TAGS.config);
   return { ok: true, message: url ? "เปลี่ยนรูปปกแล้ว" : "กลับไปใช้รูปปกเริ่มต้นแล้ว" };

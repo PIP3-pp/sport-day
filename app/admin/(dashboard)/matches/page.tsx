@@ -19,6 +19,7 @@ import { parsePage } from "@/lib/pagination";
 import { fetchMatchPage } from "@/lib/queries/matches";
 import { fetchSports } from "@/lib/queries/sports";
 import { fetchTeams } from "@/lib/queries/teams";
+import { requireAdmin } from "@/lib/require-admin";
 
 const PAGE_SIZE = 25;
 
@@ -27,6 +28,7 @@ export default async function AdminMatchesPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
+  await requireAdmin();
   const page = parsePage((await searchParams).page);
   const [{ matches, hasMore }, sports, teams] = await Promise.all([
     fetchMatchPage(undefined, page, PAGE_SIZE),

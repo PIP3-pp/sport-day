@@ -21,6 +21,7 @@ import { fetchMatchPage, fetchPendingMatches, type MatchView } from "@/lib/queri
 import { eq } from "drizzle-orm";
 import { matches as matchesTable } from "@/db/schema";
 import { fetchTeams, type TeamRef } from "@/lib/queries/teams";
+import { requireAdmin } from "@/lib/require-admin";
 
 function ResultTable({
   matches,
@@ -113,6 +114,7 @@ export default async function AdminResultsPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
+  await requireAdmin();
   const page = parsePage((await searchParams).page);
   const [pending, { matches: completed, hasMore }, teams, config] = await Promise.all([
     fetchPendingMatches(),

@@ -14,8 +14,10 @@ import {
 import { deleteAnnouncement, saveAnnouncement } from "@/lib/actions/announcements";
 import { formatThaiDate, todayInBangkok } from "@/lib/date";
 import { fetchAnnouncements } from "@/lib/queries/announcements";
+import { requireAdmin } from "@/lib/require-admin";
 
 export default async function AdminAnnouncementsPage() {
+  await requireAdmin();
   const announcements = await fetchAnnouncements();
   const today = todayInBangkok();
 

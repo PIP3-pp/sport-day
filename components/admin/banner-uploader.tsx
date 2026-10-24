@@ -29,7 +29,7 @@ export function BannerUploader({ currentUrl }: { currentUrl: string | null }) {
     const ext = fileExtension(file.name);
     const type = BANNER_TYPES[ext];
     if (!type) {
-      toast.error("รองรับเฉพาะไฟล์ PNG, JPEG, GIF, SVG, WebP, MOV หรือ MP4");
+      toast.error("รองรับเฉพาะไฟล์ PNG, JPEG, GIF, WebP, MOV หรือ MP4");
       return;
     }
     if (file.size > BANNER_MAX_BYTES) {
@@ -81,13 +81,13 @@ export function BannerUploader({ currentUrl }: { currentUrl: string | null }) {
             className="max-h-72 w-full object-cover"
           />
         ) : (
-          // Plain <img>: a preview of any format (SVG, GIF) without the optimizer.
+          // Plain <img>: a preview of any format (e.g. GIF) without the optimizer.
           // eslint-disable-next-line @next/next/no-img-element
           <img src={src} alt="รูปปกปัจจุบัน" className="max-h-72 w-full object-cover" />
         )}
       </div>
       <p className="text-xs text-muted-foreground">
-        {currentUrl ? "ใช้รูปปกที่อัปโหลด" : "ใช้รูปปกเริ่มต้น"} · รองรับ PNG, JPEG, GIF, SVG,
+        {currentUrl ? "ใช้รูปปกที่อัปโหลด" : "ใช้รูปปกเริ่มต้น"} · รองรับ PNG, JPEG, GIF,
         WebP, MOV และ MP4 ขนาดไม่เกิน {BANNER_MAX_BYTES / 1024 / 1024} MB · วิดีโอจะเล่นวนแบบปิดเสียง
         (แนะนำ MP4 เพื่อให้เล่นได้ทุกเบราว์เซอร์)
       </p>

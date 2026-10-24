@@ -9,6 +9,7 @@ import { teamSchema } from "@/lib/validations";
 import {
   adminActor,
   audit,
+  deleteBlobs,
   failure,
   invalid,
   invalidate,
@@ -30,7 +31,18 @@ export async function updateTeam(
   const upload = await uploadImage(formData.get("logo"), "teams");
   if (!upload.ok) return { ok: false, fieldErrors: { logo: [upload.message] } };
 
+  const removeLogo = formData.get("removeLogo") === "on" && !upload.url;
+  let previousLogo: string | null = null;
   try {
+    const [current] = await db
+      .select({ logoUrl: teams.logoUrl })
+      .from(teams)
+      .where(eq(teams.id, id));
+    if (!current) {
+      await deleteBlobs(upload.url);
+      return { ok: false, message: "ไม่พบทีมนี้ กรุณาโหลดหน้าใหม่" };
+    }
+    previousLogo = current.logoUrl;
     await db
       .update(teams)
       .set({
@@ -38,12 +50,14 @@ export async function updateTeam(
         slogan: slogan ?? null,
         description: description ?? null,
         ...(upload.url ? { logoUrl: upload.url } : {}),
-        ...(formData.get("removeLogo") === "on" && !upload.url ? { logoUrl: null } : {}),
+        ...(removeLogo ? { logoUrl: null } : {}),
       })
       .where(eq(teams.id, id));
   } catch (error) {
+    await deleteBlobs(upload.url);
     return failure(error);
   }
+  if (upload.url || removeLogo) await deleteBlobs(previousLogo);
   await audit(actor, "team.update", name);
   invalidate(TAGS.teams);
   return { ok: true, message: "บันทึกข้อมูลทีมแล้ว" };

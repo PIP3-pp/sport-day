@@ -17,8 +17,10 @@ import { formatTime } from "@/lib/date";
 import { fetchPracticeSessions, groupBySport } from "@/lib/queries/practice";
 import { fetchSports } from "@/lib/queries/sports";
 import { fetchTeams } from "@/lib/queries/teams";
+import { requireAdmin } from "@/lib/require-admin";
 
 export default async function AdminPracticePage() {
+  await requireAdmin();
   const [sessions, sports, teams] = await Promise.all([
     fetchPracticeSessions(),
     fetchSports(),

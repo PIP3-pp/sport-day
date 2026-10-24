@@ -2,8 +2,10 @@ import { AdminPageHeader, Panel } from "@/components/admin/admin-page";
 import { SettingsForm } from "@/components/admin/settings-form";
 import { saveSettings } from "@/lib/actions/settings";
 import { fetchSiteConfig } from "@/lib/queries/config";
+import { requireAdmin } from "@/lib/require-admin";
 
 export default async function AdminSettingsPage() {
+  await requireAdmin();
   const config = await fetchSiteConfig();
 
   return (

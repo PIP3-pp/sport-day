@@ -66,10 +66,16 @@ export async function startMatch(
   if (!parsed.success) return invalid(parsed.error);
 
   try {
-    await db
+    const started = await db
       .update(matches)
       .set({ status: "in_progress" })
-      .where(and(eq(matches.id, parsed.data.id), eq(matches.status, "scheduled")));
+      .where(and(eq(matches.id, parsed.data.id), eq(matches.status, "scheduled")))
+      .returning({ id: matches.id });
+    if (started.length === 0) {
+      // Another admin changed it first; refresh so the list shows the real status.
+      invalidate(TAGS.matches);
+      return { ok: false, message: "การแข่งขันนี้ไม่ได้อยู่ในสถานะ “ยังไม่เริ่ม” แล้ว กรุณาโหลดหน้าใหม่" };
+    }
   } catch (error) {
     return failure(error);
   }

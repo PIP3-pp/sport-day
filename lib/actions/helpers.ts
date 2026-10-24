@@ -1,5 +1,5 @@
 import "server-only";
-import { put } from "@vercel/blob";
+import { del, put } from "@vercel/blob";
 import { updateTag } from "next/cache";
 import type { ZodError } from "zod";
 import { db } from "@/db";
@@ -103,5 +103,28 @@ export async function uploadImage(
   } catch (error) {
     console.error(error);
     return { ok: false, message: "อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่อีกครั้ง" };
+  }
+}
+
+const isBlobUrl = (value: string) => {
+  try {
+    return new URL(value).hostname.endsWith(".public.blob.vercel-storage.com");
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Removes uploaded files that nothing references any more (a replaced logo, or an
+ * upload whose save failed). Bundled files such as /banner.webp are skipped.
+ * A failure is logged but never fails the action.
+ */
+export async function deleteBlobs(...urls: (string | null | undefined)[]) {
+  const targets = urls.filter((url): url is string => !!url && isBlobUrl(url));
+  if (targets.length === 0 || !process.env.BLOB_READ_WRITE_TOKEN) return;
+  try {
+    await del(targets);
+  } catch (error) {
+    console.error("Failed to delete unused files", error);
   }
 }

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { db } from "@/db";
 import { auditLog } from "@/db/schema";
+import { requireAdmin } from "@/lib/require-admin";
 
 const LIMIT = 100;
 
@@ -42,6 +43,7 @@ const formatWhen = (value: string) =>
   }).format(new Date(value));
 
 export default async function AdminActivityPage() {
+  await requireAdmin();
   const rows = await db
     .select()
     .from(auditLog)

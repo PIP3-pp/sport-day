@@ -1,5 +1,5 @@
 import "server-only";
-import { asc, eq } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import { db } from "@/db";
 import { teams } from "@/db/schema";
 import { cached, TAGS } from "./cache";
@@ -11,10 +11,9 @@ export async function fetchTeams(): Promise<Team[]> {
   return db.select().from(teams).orderBy(asc(teams.id));
 }
 
-async function fetchTeamBySlug(slug: string): Promise<Team | null> {
-  const [row] = await db.select().from(teams).where(eq(teams.slug, slug));
-  return row ?? null;
-}
-
 export const getTeams = cached(fetchTeams, "teams", [TAGS.teams]);
-export const getTeamBySlug = cached(fetchTeamBySlug, "team-by-slug", [TAGS.teams]);
+
+/** Looked up in the cached team list, so arbitrary slugs never add cache entries. */
+export async function getTeamBySlug(slug: string): Promise<Team | null> {
+  return (await getTeams()).find((team) => team.slug === slug) ?? null;
+}

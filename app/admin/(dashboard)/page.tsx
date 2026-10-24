@@ -6,8 +6,10 @@ import { TeamBadge } from "@/components/shared/team-badge";
 import { formatDisplayDate, formatThaiDate, formatTime, todayInBangkok } from "@/lib/date";
 import { fetchMatchesOnDate, fetchRecentResults } from "@/lib/queries/matches";
 import { fetchStandings } from "@/lib/queries/standings";
+import { requireAdmin } from "@/lib/require-admin";
 
 export default async function AdminDashboardPage() {
+  await requireAdmin();
   const today = todayInBangkok();
   const [todayMatches, recentResults, standings] = await Promise.all([
     fetchMatchesOnDate(today),
