@@ -9,8 +9,8 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    // Admin forms can carry one image of up to 2 MB.
-    serverActions: { bodySizeLimit: "3mb" },
+    // Admin forms can carry one announcement attachment of up to 5 MB.
+    serverActions: { bodySizeLimit: "6mb" },
   },
 };
 
