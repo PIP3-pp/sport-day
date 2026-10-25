@@ -22,6 +22,13 @@
       "when": 1792497725043,
       "tag": "0002_practice_banner_visibility",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792920000000,
+      "tag": "0003_announcement_attachments",
+      "breakpoints": true
     }
   ]
 }

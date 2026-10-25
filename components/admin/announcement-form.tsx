@@ -2,6 +2,7 @@
 
 import type { Announcement } from "@/lib/queries/announcements";
 import { CheckboxField, TextareaField, TextField } from "./fields";
+import { AttachmentField } from "./announcement-attachment-field";
 
 export function AnnouncementForm({
   announcement,
@@ -19,6 +20,12 @@ export function AnnouncementForm({
         label="เนื้อหา"
         rows={6}
         defaultValue={announcement?.content}
+      />
+      <AttachmentField
+        name="attachment"
+        currentUrl={announcement?.attachmentUrl ?? null}
+        currentType={announcement?.attachmentType ?? null}
+        currentName={announcement?.attachmentName ?? null}
       />
       <TextField
         name="publishedAt"

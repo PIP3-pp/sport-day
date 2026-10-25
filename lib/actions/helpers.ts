@@ -106,6 +106,52 @@ export async function uploadImage(
   }
 }
 
+const MAX_ANNOUNCEMENT_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+
+export type AnnouncementAttachmentResult =
+  | { ok: true; url: string | null; type: "image" | "pdf" | null; name: string | null }
+  | { ok: false; message: string };
+
+/** Uploads an announcement image or PDF to Vercel Blob after checking its signature. */
+export async function uploadAnnouncementAttachment(
+  value: FormDataEntryValue | null,
+): Promise<AnnouncementAttachmentResult> {
+  if (!(value instanceof File) || value.size === 0) {
+    return { ok: true, url: null, type: null, name: null };
+  }
+  if (value.size > MAX_ANNOUNCEMENT_ATTACHMENT_BYTES) {
+    return { ok: false, message: "ไฟล์แนบต้องมีขนาดไม่เกิน 5 MB" };
+  }
+
+  const header = new Uint8Array(await value.slice(0, 12).arrayBuffer());
+  const imageType = detectImageType(header);
+  const imageExtensions: Record<string, string> = {
+    "image/png": "png",
+    "image/jpeg": "jpg",
+    "image/webp": "webp",
+  };
+  const isPdf = header.length >= 5 && String.fromCharCode(...header.slice(0, 5)) === "%PDF-";
+  const type = imageType && imageExtensions[imageType] ? "image" : isPdf ? "pdf" : null;
+  if (!type) return { ok: false, message: "รองรับเฉพาะรูป PNG, JPG, WebP หรือไฟล์ PDF" };
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return { ok: false, message: "ยังไม่ได้ตั้งค่าที่เก็บไฟล์ (BLOB_READ_WRITE_TOKEN)" };
+  }
+
+  const extension = type === "pdf" ? "pdf" : imageExtensions[imageType!];
+  const contentType = type === "pdf" ? "application/pdf" : imageType!;
+  try {
+    const blob = await put(`announcements/attachment.${extension}`, value, {
+      access: "public",
+      addRandomSuffix: true,
+      contentType,
+    });
+    return { ok: true, url: blob.url, type, name: value.name.slice(0, 255) || `attachment.${extension}` };
+  } catch (error) {
+    console.error(error);
+    return { ok: false, message: "อัปโหลดไฟล์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง" };
+  }
+}
+
 const isBlobUrl = (value: string) => {
   try {
     return new URL(value).hostname.endsWith(".public.blob.vercel-storage.com");
